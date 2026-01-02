@@ -1,0 +1,242 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Notifica Prenotazione</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            line-height: 1.6;
+            color: #333;
+            background-color: #f4f4f4;
+            margin: 0;
+            padding: 0;
+        }
+        .container {
+            max-width: 600px;
+            margin: 20px auto;
+            background: #fff;
+            border-radius: 8px;
+            overflow: hidden;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        .header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 30px 20px;
+            text-align: center;
+        }
+        .header h1 {
+            margin: 0;
+            font-size: 24px;
+        }
+        .content {
+            padding: 30px 20px;
+        }
+        .alert {
+            padding: 15px;
+            margin-bottom: 20px;
+            border-radius: 5px;
+            font-weight: bold;
+        }
+        .alert-info {
+            background-color: #d1ecf1;
+            border-left: 4px solid #17a2b8;
+            color: #0c5460;
+        }
+        .alert-warning {
+            background-color: #fff3cd;
+            border-left: 4px solid #ffc107;
+            color: #856404;
+        }
+        .alert-danger {
+            background-color: #f8d7da;
+            border-left: 4px solid #dc3545;
+            color: #721c24;
+        }
+        .booking-details {
+            background: #f8f9fa;
+            padding: 20px;
+            border-radius: 5px;
+            margin: 20px 0;
+        }
+        .detail-row {
+            display: flex;
+            padding: 10px 0;
+            border-bottom: 1px solid #dee2e6;
+        }
+        .detail-row:last-child {
+            border-bottom: none;
+        }
+        .detail-label {
+            font-weight: bold;
+            width: 140px;
+            color: #495057;
+        }
+        .detail-value {
+            flex: 1;
+            color: #212529;
+        }
+        .btn {
+            display: inline-block;
+            padding: 12px 30px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            text-decoration: none;
+            border-radius: 5px;
+            font-weight: bold;
+            text-align: center;
+            margin: 20px 0;
+        }
+        .btn:hover {
+            opacity: 0.9;
+        }
+        .footer {
+            background: #f8f9fa;
+            padding: 20px;
+            text-align: center;
+            font-size: 12px;
+            color: #6c757d;
+        }
+        .emoji {
+            font-size: 20px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1><span class="emoji">🏖️</span> PrenoPinzo</h1>
+        </div>
+        
+        <div class="content">
+            {% if action_type == 'created' %}
+                <div class="alert alert-info">
+                    <span class="emoji">📝</span> Nuova Richiesta di Prenotazione
+                </div>
+                <p>Ciao! È stata creata una nuova richiesta di prenotazione che richiede la tua approvazione.</p>
+            
+            {% elif action_type == 'approved' %}
+                <div class="alert alert-info" style="background-color: #d4edda; border-left: 4px solid #28a745; color: #155724;">
+                    <span class="emoji">✅</span> Prenotazione Approvata!
+                </div>
+                <p><strong>Ottima notizia!</strong> La tua richiesta di prenotazione è stata approvata.</p>
+            
+            {% elif action_type == 'rejected' %}
+                <div class="alert alert-warning">
+                    <span class="emoji">❌</span> Richiesta Rifiutata - Correzione Necessaria
+                </div>
+                <p>La tua richiesta di prenotazione è stata rifiutata. È necessario apportare delle modifiche.</p>
+            
+            {% elif action_type == 'deroga_requested' %}
+                <div class="alert alert-danger">
+                    <span class="emoji">🔄</span> URGENTE - Richiesta Modifica Prenotazione Approvata
+                </div>
+                <p><strong>Attenzione!</strong> È stata richiesta una modifica per una tua prenotazione già approvata.</p>
+            
+            {% elif action_type == 'modified' %}
+                <div class="alert alert-info">
+                    <span class="emoji">✏️</span> Prenotazione Modificata - Nuova Approvazione Necessaria
+                </div>
+                <p>Una prenotazione è stata modificata e richiede nuovamente la tua approvazione.</p>
+            
+            {% elif action_type == 'period_reduced' %}
+                <div class="alert alert-info" style="background-color: #d4edda; border-left: 4px solid #28a745; color: #155724;">
+                    <span class="emoji">📉</span> Periodo Ridotto - PRE-APPROVATO
+                </div>
+                <p><strong>Buone notizie!</strong> L'altra famiglia ha <strong>ridotto</strong> il periodo della loro prenotazione.</p>
+                <p>Poiché il nuovo periodo rientra completamente in quello già approvato, <strong>la modifica è stata automaticamente accettata</strong> senza richiedere una nuova approvazione.</p>
+                {% if original_start or original_end %}
+                <div class="alert" style="background-color: #fff3cd; border-left: 4px solid #ffc107; padding: 15px; margin: 20px 0; border-radius: 5px;">
+                    <div style="margin-bottom: 10px;">
+                        <strong style="color: #856404;">📅 Periodo Originale (approvato):</strong><br>
+                        <span style="font-size: 18px; color: #333;">{{ original_start|date:"d/m/Y" }} - {{ original_end|date:"d/m/Y" }}</span>
+                    </div>
+                    <div style="text-align: center; margin: 10px 0; font-size: 24px; color: #28a745;">
+                        ⬇️
+                    </div>
+                    <div>
+                        <strong style="color: #155724;">📅 Nuovo Periodo (confermato):</strong><br>
+                        <span style="font-size: 18px; color: #28a745; font-weight: bold;">{{ booking.start_date|date:"d/m/Y" }} - {{ booking.end_date|date:"d/m/Y" }}</span>
+                    </div>
+                </div>
+                <p style="color: #6c757d; font-style: italic;">
+                    ℹ️ Questa è solo una notifica informativa. Non è richiesta alcuna azione da parte tua.
+                </p>
+                {% endif %}
+            {% endif %}
+
+            <div class="booking-details">
+                <h3 style="margin-top: 0; color: #495057;">Dettagli Prenotazione</h3>
+                
+                <div class="detail-row">
+                    <div class="detail-label">📌 Titolo:</div>
+                    <div class="detail-value"><strong>{{ booking.title }}</strong></div>
+                </div>
+                
+                <div class="detail-row">
+                    <div class="detail-label">👨‍👩‍👧‍👦 Famiglia:</div>
+                    <div class="detail-value">{{ booking.get_family_group_display }}</div>
+                </div>
+                
+                <div class="detail-row">
+                    <div class="detail-label">📅 Periodo:</div>
+                    <div class="detail-value">
+                        <strong>{{ booking.start_date|date:"d/m/Y" }}</strong> - <strong>{{ booking.end_date|date:"d/m/Y" }}</strong>
+                        ({{ booking.start_date|timesince:booking.end_date }})
+                    </div>
+                </div>
+                
+                <div class="detail-row">
+                    <div class="detail-label">🔔 Stato:</div>
+                    <div class="detail-value">{{ booking.get_status_display }}</div>
+                </div>
+                
+                <div class="detail-row">
+                    <div class="detail-label">👤 Creata da:</div>
+                    <div class="detail-value">{{ booking.user.username }}</div>
+                </div>
+
+                {% if booking.rejection_note %}
+                <div class="detail-row">
+                    <div class="detail-label">📝 Note Rifiuto:</div>
+                    <div class="detail-value" style="color: #dc3545; font-style: italic;">{{ booking.rejection_note }}</div>
+                </div>
+                {% endif %}
+
+                {% if booking.deroga_note %}
+                <div class="detail-row">
+                    <div class="detail-label">📝 Note Deroga:</div>
+                    <div class="detail-value" style="color: #ffc107; font-style: italic;">{{ booking.deroga_note }}</div>
+                </div>
+                
+                {% if booking.original_start_date %}
+                <div class="detail-row">
+                    <div class="detail-label">📅 Date Originali:</div>
+                    <div class="detail-value" style="text-decoration: line-through; color: #6c757d;">
+                        {{ booking.original_start_date|date:"d/m/Y" }} - {{ booking.original_end_date|date:"d/m/Y" }}
+                    </div>
+                </div>
+                {% endif %}
+                {% endif %}
+            </div>
+
+            <div style="text-align: center;">
+                <a href="{{ dashboard_url }}" class="btn">
+                    <span class="emoji">🔗</span> Vai alla Dashboard
+                </a>
+            </div>
+
+            <p style="margin-top: 30px; font-size: 14px; color: #6c757d;">
+                Accedi alla dashboard per approvare, rifiutare o gestire questa richiesta.
+            </p>
+        </div>
+        
+        <div class="footer">
+            <p>Questa è una notifica automatica da PrenoPinzo.</p>
+            <p>Per gestire le prenotazioni, accedi a: <a href="{{ app_url }}">{{ app_url }}</a></p>
+        </div>
+    </div>
+</body>
+</html>

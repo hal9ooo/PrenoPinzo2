@@ -36,3 +36,37 @@ class DerogaForm(forms.Form):
 
 class RejectForm(forms.Form):
     note = forms.CharField(widget=forms.Textarea(attrs={'class': 'form-control', 'rows': 3}))
+
+# Import UserProfile model inside the form file if not already imported, or verify import at top
+from .models import UserProfile
+
+class UserProfileForm(forms.ModelForm):
+    class Meta:
+        model = UserProfile
+        fields = ['phone', 'callmebot_apikey', 'whatsapp_enabled', 'avatar']
+        widgets = {
+            'phone': forms.TextInput(attrs={
+                'class': 'form-control', 
+                'placeholder': '+393331234567'
+            }),
+            'callmebot_apikey': forms.TextInput(attrs={
+                'class': 'form-control',
+                'placeholder': '123456'
+            }),
+            'whatsapp_enabled': forms.CheckboxInput(attrs={
+                'class': 'form-check-input'
+            }),
+            'avatar': forms.FileInput(attrs={
+                'class': 'form-control'
+            }),
+        }
+        labels = {
+            'phone': 'Numero di Telefono (con prefisso)',
+            'callmebot_apikey': 'CallMeBot API Key',
+            'whatsapp_enabled': 'Abilita Notifiche WhatsApp',
+            'avatar': 'Immagine Profilo'
+        }
+        help_texts = {
+            'phone': 'Formato internazionale obbligatorio (es. +39...)',
+            'callmebot_apikey': 'Richiedila inviando un messaggio a CallMeBot'
+        }

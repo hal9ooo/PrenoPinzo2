@@ -8,6 +8,12 @@ class UserProfile(models.Model):
     ]
     user = models.OneToOneField(User, on_delete=models.CASCADE, related_name='profile')
     family_group = models.CharField(max_length=20, choices=FAMILY_CHOICES)
+    
+    # WhatsApp Notification fields
+    phone = models.CharField(max_length=20, blank=True, help_text="International format (e.g. +39333...)")
+    callmebot_apikey = models.CharField(max_length=50, blank=True, help_text="Get it from CallMeBot")
+    whatsapp_enabled = models.BooleanField(default=False, help_text="Enable WhatsApp notifications")
+    avatar = models.ImageField(upload_to='avatars/', blank=True, null=True, help_text="Immagine del profilo")
 
     def __str__(self):
         return f"{self.user.username} ({self.family_group})"
@@ -122,6 +128,31 @@ class Booking(models.Model):
         self.log_action('MODIFIED', user, details=f"New dates: {new_start}-{new_end}")
         self.save()
 
+    def cancel(self, user):
+        # Owner cancels their booking
+        self.status = 'CANCELLED'
+        self.pending_with = None
+        self.log_action('CANCELLED', user, details=f"Booking cancelled: {self.title}")
+        self.save()
+
+    @classmethod
+    def check_overlap(cls, start_date, end_date, exclude_id=None):
+        """
+        Check if the given date range overlaps with any APPROVED or DEROGA booking.
+        Logic: Overlap if (StartA < EndB) and (EndA > StartB).
+        This allows touching dates (e.g. A ends 30th, B starts 30th) assuming
+        check-out in morning and check-in in afternoon.
+        """
+        query = cls.objects.filter(
+            status__in=['APPROVED', 'DEROGA'],
+            start_date__lt=end_date,
+            end_date__gt=start_date
+        )
+        if exclude_id:
+            query = query.exclude(id=exclude_id)
+        
+        return query.exists()
+
 class BookingAudit(models.Model):
     booking = models.ForeignKey(Booking, on_delete=models.CASCADE, related_name='audits')
     action = models.CharField(max_length=100)
@@ -131,3 +162,17 @@ class BookingAudit(models.Model):
 
     def __str__(self):
         return f"{self.action} on {self.booking} by {self.performed_by}"
+
+
+class ChatMessage(models.Model):
+    """Real-time chat messages between family groups"""
+    sender = models.ForeignKey(User, on_delete=models.CASCADE, related_name='sent_messages')
+    content = models.TextField()
+    timestamp = models.DateTimeField(auto_now_add=True)
+    is_read = models.BooleanField(default=False)
+
+    class Meta:
+        ordering = ['timestamp']
+
+    def __str__(self):
+        return f"{self.sender.username}: {self.content[:50]}"

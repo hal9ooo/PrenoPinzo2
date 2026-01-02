@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PrenoPinzo - Gestione Casa Vacanze</title>
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;800&display=swap" rel="stylesheet">
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <!-- Custom CSS -->
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+    <!-- Navbar -->
+    <nav class="navbar">
+        <div class="container">
+            <a href="#" class="logo"><i class="fa-solid fa-umbrella-beach"></i> PrenoPinzo</a>
+            <div class="nav-links">
+                <a href="#features">Funzionalità</a>
+                <a href="#pricing">Prezzi</a>
+                <a href="#contact" class="btn btn-primary">Inizia Ora</a>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Hero Section -->
+    <header class="hero">
+        <div class="container hero-content">
+            <div class="hero-text">
+                <h1>Condividi la tua Casa Vacanze.<br><span class="highlight">Senza Stress.</span></h1>
+                <p>La soluzione definitiva per gestire prenotazioni tra famiglie e amici. Calendario condiviso, regole eque e notifiche intelligenti.</p>
+                <div class="hero-buttons">
+                    <a href="#pricing" class="btn btn-primary btn-lg">Abbonati a 40€/anno</a>
+                    <a href="#features" class="btn btn-outline btn-lg">Scopri di più</a>
+                </div>
+            </div>
+            <div class="hero-image">
+                <img src="images/hero.png" alt="Luxury Holiday Home">
+            </div>
+        </div>
+    </header>
+
+    <!-- Features Section -->
+    <section id="features" class="features">
+        <div class="container">
+            <h2 class="section-title">Perché scegliere PrenoPinzo?</h2>
+            <div class="feature-grid">
+                <div class="feature-card">
+                    <div class="icon"><i class="fa-solid fa-calendar-check"></i></div>
+                    <h3>Calendario Condiviso</h3>
+                    <p>Visualizza a colpo d'occhio le date libere e occupate. Niente più fogli Excel o messaggi confusi.</p>
+                </div>
+                <div class="feature-card">
+                    <div class="icon"><i class="fa-solid fa-scale-balanced"></i></div>
+                    <h3>Algoritmo Equo</h3>
+                    <p>Il nostro sistema garantisce che tutti abbiano le stesse opportunità di prenotare i periodi migliori.</p>
+                </div>
+                <div class="feature-card">
+                    <div class="icon"><i class="fa-solid fa-bell"></i></div>
+                    <h3>Doppia Notifica</h3>
+                    <p>Resta aggiornato via Email e WhatsApp. Non perderai mai una richiesta di approvazione.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- App Showcase -->
+    <section class="showcase">
+        <div class="container showcase-grid">
+            <div class="showcase-image">
+                <img src="images/mockup.png" alt="App Interface">
+            </div>
+            <div class="showcase-text">
+                <h2>Tutto a portata di mano.</h2>
+                <ul class="feature-list">
+                    <li><i class="fa-solid fa-check-circle"></i> <strong>Gestione Profilo:</strong> Carica la tua foto e gestisci le tue preferenze.</li>
+                    <li><i class="fa-solid fa-check-circle"></i> <strong>Chat Integrata:</strong> Comunica direttamente con gli altri membri.</li>
+                    <li><i class="fa-solid fa-check-circle"></i> <strong>Integrazione Domotica:</strong> Controlla il termostato direttamente dall'app (Home Assistant).</li>
+                </ul>
+            </div>
+        </div>
+    </section>
+    
+    <!-- Notification Showcase -->
+     <section class="showcase reverse">
+        <div class="container showcase-grid">
+             <div class="showcase-text">
+                <h2>Mai più dimenticanze.</h2>
+                <p>Grazie all'integrazione con <strong>CallMeBot</strong>, ricevi notifiche istantanee su WhatsApp per ogni nuova prenotazione o modifica.</p>
+                <div class="partners">
+                    <i class="fa-brands fa-whatsapp fa-3x"></i>
+                </div>
+            </div>
+            <div class="showcase-image">
+                <img src="images/whatsapp.png" alt="WhatsApp Notification">
+            </div>
+        </div>
+    </section>
+
+    <!-- Pricing Section -->
+    <section id="pricing" class="pricing">
+        <div class="container">
+            <h2 class="section-title">Semplice e Trasparente.</h2>
+            <div class="pricing-card">
+                <div class="pricing-header">
+                    <h3>Piano Annuale</h3>
+                    <div class="price">40€<span class="period">/anno</span></div>
+                </div>
+                <ul class="pricing-features">
+                    <li><i class="fa-solid fa-check"></i> Utenti Illimitati</li>
+                    <li><i class="fa-solid fa-check"></i> Prenotazioni Illimitate</li>
+                    <li><i class="fa-solid fa-check"></i> Notifiche WhatsApp Incluse</li>
+                    <li><i class="fa-solid fa-check"></i> Integrazione Domotica</li>
+                    <li><i class="fa-solid fa-check"></i> Supporto Dedicato</li>
+                    <li><i class="fa-solid fa-check"></i> Aggiornamenti Futuri</li>
+                </ul>
+                <a href="#" class="btn btn-primary btn-block">Acquista Ora</a>
+                <p class="small-print">Pagamento sicuro tramite Stripe. Disdici quando vuoi.</p>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer>
+        <div class="container footer-content">
+            <p>&copy; 2025 PrenoPinzo. Tutti i diritti riservati.</p>
+            <div class="socials">
+                <a href="#"><i class="fa-brands fa-instagram"></i></a>
+                <a href="#"><i class="fa-brands fa-twitter"></i></a>
+            </div>
+        </div>
+    </footer>
+
+</body>
+</html>

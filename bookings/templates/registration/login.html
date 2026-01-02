@@ -1,0 +1,45 @@
+{% extends 'base.html' %}
+
+{% block title %}Login{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-md-6 col-lg-4">
+        <div class="card mt-5">
+            <div class="card-body">
+                <h3 class="card-title text-center mb-4">Accedi a PrenoPinzo</h3>
+                <form method="post">
+                    {% csrf_token %}
+                    {% if form.errors %}
+                        <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                            {% for error in form.non_field_errors %}
+                                <div><i class="fa-solid fa-circle-exclamation me-2"></i>{{ error }}</div>
+                            {% endfor %}
+                            {% for field in form %}
+                                {% for error in field.errors %}
+                                    <div><i class="fa-solid fa-circle-exclamation me-2"></i><strong>{{ field.label }}:</strong> {{ error }}</div>
+                                {% endfor %}
+                            {% endfor %}
+                            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                        </div>
+                    {% endif %}
+                    <div class="mb-3">
+                        <label class="form-label">Username</label>
+                        {{ form.username }}
+                    </div>
+                     <div class="mb-3">
+                        <label class="form-label">Password</label>
+                        {{ form.password }}
+                    </div>
+                    <div class="d-grid">
+                        <button type="submit" class="btn btn-primary">Login</button>
+                    </div>
+                    <div class="text-center mt-3">
+                        <a href="{% url 'password_reset' %}" class="text-muted">Password dimenticata?</a>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

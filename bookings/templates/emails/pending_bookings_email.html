@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <style>
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; line-height: 1.6; color: #333; }
+        .container { max-width: 600px; margin: 0 auto; padding: 20px; border: 1px solid #e0e0e0; border-radius: 8px; background-color: #f9f9f9; }
+        .header { text-align: center; margin-bottom: 30px; }
+        .header h1 { color: #f0ad4e; margin: 0; }
+        .content { background-color: #ffffff; padding: 20px; border-radius: 6px; box-shadow: 0 2px 4px rgba(0,0,0,0.05); }
+        .booking-list { list-style: none; padding: 0; }
+        .booking-item { padding: 10px; border-bottom: 1px solid #eee; }
+        .booking-item:last-child { border-bottom: none; }
+        .booking-title { font-weight: bold; font-size: 1.1em; }
+        .booking-dates { color: #666; font-size: 0.9em; }
+        .btn { display: inline-block; padding: 12px 24px; background-color: #f0ad4e; color: #ffffff !important; text-decoration: none; border-radius: 6px; font-weight: bold; margin-top: 20px; }
+        .btn:hover { background-color: #ec971f; }
+        .footer { text-align: center; margin-top: 30px; font-size: 0.85rem; color: #6c757d; }
+        .badge { display: inline-block; padding: 0.25em 0.4em; font-size: 75%; font-weight: 700; line-height: 1; text-align: center; white-space: nowrap; vertical-align: baseline; border-radius: 0.25rem; }
+        .bg-warning { background-color: #ffc107; color: #000; }
+        .bg-danger { background-color: #dc3545; color: #fff; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>PrenoPinzo ⏳</h1>
+        </div>
+        <div class="content">
+            <p>Ciao <strong>Famiglia {{ family_name }}</strong>,</p>
+            <p>Ci sono ancora <strong>{{ count }}</strong> richieste in attesa della vostra approvazione.</p>
+            
+            <ul class="booking-list">
+                {% for booking in bookings %}
+                <li class="booking-item">
+                    <div class="booking-title">
+                        {{ booking.title }}
+                        {% if booking.status == 'DEROGA' %}
+                        <span class="badge bg-danger">Deroga</span>
+                        {% else %}
+                        <span class="badge bg-warning">Nuova</span>
+                        {% endif %}
+                    </div>
+                    <div class="booking-dates">
+                        📅 {{ booking.start_date|date:"d/m/Y" }} - {{ booking.end_date|date:"d/m/Y" }}
+                    </div>
+                    <div style="font-size: 0.85em; color: #888;">
+                        Proprietario: {{ booking.family_group }}
+                    </div>
+                </li>
+                {% endfor %}
+            </ul>
+            
+            <p>Per favore, accedete alla piattaforma per gestirle.</p>
+            <center>
+                <a href="{{ app_url }}/dashboard/" class="btn">Vai alla Dashboard</a>
+            </center>
+        </div>
+        <div class="footer">
+            <p>Promemoria settimanale automatico sent by PrenoPinzo.</p>
+        </div>
+    </div>
+</body>
+</html>

@@ -20,7 +20,9 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # See https://docs.djangoproject.com/en/6.0/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = 'django-insecure-f-u@2uhbgi97t3#iy(ipztln+vt0k=o8t_g%*u6nu0sdysy$qj'
+# Development only - DO NOT use in production!
+# Generate a real key with: python -c "import secrets; print(secrets.token_urlsafe(50))"
+SECRET_KEY = 'django-insecure-development-only-not-for-production'
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
@@ -31,6 +33,8 @@ ALLOWED_HOSTS = []
 # Application definition
 
 INSTALLED_APPS = [
+    'daphne',
+    'bookings',
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
@@ -38,7 +42,7 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'django_htmx',
-    'bookings',
+    'channels',
 ]
 
 MIDDLEWARE = [
@@ -70,7 +74,14 @@ TEMPLATES = [
 ]
 
 WSGI_APPLICATION = 'PrenoPinzo.wsgi.application'
+ASGI_APPLICATION = 'PrenoPinzo.asgi.application'
 
+# Channel layers for WebSocket
+CHANNEL_LAYERS = {
+    'default': {
+        'BACKEND': 'channels.layers.InMemoryChannelLayer'
+    }
+}
 
 # Database
 # https://docs.djangoproject.com/en/6.0/ref/settings/#databases
@@ -105,13 +116,22 @@ AUTH_PASSWORD_VALIDATORS = [
 # Internationalization
 # https://docs.djangoproject.com/en/6.0/topics/i18n/
 
-LANGUAGE_CODE = 'en-us'
+LANGUAGE_CODE = 'it-IT'
 
-TIME_ZONE = 'UTC'
+TIME_ZONE = 'Europe/Rome'
 
 USE_I18N = True
 
 USE_TZ = True
+
+# Use localized formatting
+USE_L10N = True
+
+# Date and time formats for Italian locale
+DATE_FORMAT = 'd/m/Y'
+SHORT_DATE_FORMAT = 'd/m/Y'
+DATETIME_FORMAT = 'd/m/Y H:i'
+SHORT_DATETIME_FORMAT = 'd/m/Y H:i'
 
 
 # Static files (CSS, JavaScript, Images)
@@ -121,3 +141,20 @@ STATIC_URL = 'static/'
 
 LOGIN_REDIRECT_URL = 'dashboard'
 LOGOUT_REDIRECT_URL = 'login'
+
+# Email Configuration
+EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
+EMAIL_HOST = '127.0.0.1'
+EMAIL_PORT = 25
+EMAIL_USE_TLS = False
+EMAIL_USE_SSL = False
+DEFAULT_FROM_EMAIL = 'PrenoPinzo <noreply@prenopinzo.local>'
+
+# PrenoPinzo Custom Settings
+PRENOPINZO_BASE_URL = 'http://127.0.0.1:8000'  # Configurable app base URL
+
+# Family Email Addresses (use .env in production)
+FAMILY_EMAILS = {
+    'Andrea': 'andrea@example.com',
+    'Fabrizio': 'fabrizio@example.com',
+}

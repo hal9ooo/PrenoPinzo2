@@ -1,0 +1,282 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="it">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="theme-color" content="#0d6efd">
+    <meta name="description" content="PrenoPinzo - Gestione prenotazioni casa vacanza">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="default">
+    <meta name="apple-mobile-web-app-title" content="PrenoPinzo">
+    <title>PrenoPinzo {% block title %}{% endblock %}</title>
+    <link rel="icon" type="image/png" href="{% static 'bookings/favicon.png' %}">
+    <link rel="apple-touch-icon" href="{% static 'bookings/icon-192.png' %}">
+    <link rel="manifest" href="{% static 'bookings/manifest.json' %}">
+    <!-- Bootstrap 5 -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- FontAwesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <!-- FullCalendar -->
+    <script src='https://cdn.jsdelivr.net/npm/fullcalendar@6.1.10/index.global.min.js'></script>
+    
+    <style>
+        body { background-color: #f8f9fa; }
+        .card { box-shadow: 0 4px 6px rgba(0,0,0,0.1); border: none; margin-bottom: 20px; }
+        .navbar-brand { font-weight: bold; color: #0d6efd !important; }
+        
+        /* Remove underlines from calendar */
+        .fc a { text-decoration: none !important; }
+        .fc-col-header-cell-cushion, 
+        .fc-daygrid-day-number { text-decoration: none !important; color: inherit; }
+        
+        /* Mobile optimizations */
+        @media (max-width: 768px) {
+            /* Audit log scroll on mobile */
+            .audit-log-body {
+                max-height: 300px !important;
+                overflow-y: auto !important;
+            }
+            
+            /* Smaller tables on mobile */
+            .table-responsive {
+                font-size: 0.85rem;
+            }
+            
+            /* Calendar smaller fonts and compact layout */
+            .fc {
+                font-size: 0.7rem !important;
+            }
+            .fc .fc-toolbar {
+                flex-wrap: nowrap !important;
+                gap: 0.25rem !important;
+            }
+            .fc .fc-toolbar-chunk {
+                display: flex !important;
+                flex-wrap: nowrap !important;
+            }
+            .fc .fc-toolbar-title {
+                font-size: 0.9rem !important;
+            }
+            .fc .fc-button {
+                padding: 0.2rem 0.35rem !important;
+                font-size: 0.7rem !important;
+            }
+            .fc .fc-daygrid-day-number {
+                font-size: 0.75rem !important;
+                padding: 1px 3px !important;
+            }
+            /* Show event titles on mobile with small font */
+            .fc .fc-event-title {
+                font-size: 0.6rem !important;
+                white-space: nowrap;
+                overflow: hidden;
+                text-overflow: ellipsis;
+            }
+            .fc .fc-daygrid-event {
+                padding: 1px 2px !important;
+            }
+            /* Remove card scroll */
+            .card-body {
+                overflow-x: hidden !important;
+            }
+            
+            /* Dashboard cards stack full width */
+            .col-md-4 {
+                margin-bottom: 1rem;
+            }
+            
+            /* Navbar compact */
+            .navbar-text {
+                font-size: 0.85rem;
+            }
+            
+            /* Hide holiday text on mobile - keep only background color */
+            .fc .fc-bg-event .fc-event-title {
+                display: none !important;
+            }
+            
+            /* Hide secondary info in booking rows */
+            .hide-mobile {
+                display: none !important;
+            }
+            
+            /* Compact mobile tables */
+            table {
+                font-size: 0.85rem !important;
+            }
+            table th, table td {
+                padding: 0.5rem 0.4rem !important;
+                vertical-align: middle !important;
+            }
+            /* Stack title and dates in same cell on mobile */
+            .mobile-booking-info {
+                display: block !important;
+            }
+            .mobile-date {
+                font-size: 0.75rem;
+                color: #555;
+            }
+            /* Compact buttons */
+            table .btn {
+                padding: 0.2rem 0.4rem !important;
+                font-size: 0.7rem !important;
+            }
+            table .btn i {
+                margin: 0 !important;
+            }
+            /* Hide button text on mobile, show only icons */
+            table .btn .btn-text {
+                display: none;
+            }
+        }
+        
+        /* Small phone adjustments */
+        @media (max-width: 480px) {
+            .fc .fc-toolbar-title {
+                font-size: 0.85rem !important;
+            }
+            h2 {
+                font-size: 1.3rem;
+            }
+        }
+    </style>
+    {% block extra_head %}{% endblock %}
+</head>
+<body>
+    <nav class="navbar navbar-expand-lg navbar-light bg-white border-bottom mb-4">
+        <div class="container">
+            <a class="navbar-brand" href="{% url 'dashboard' %}"><i class="fa-solid fa-umbrella-beach"></i> PrenoPinzo</a>
+            <div class="d-flex align-items-center d-lg-none">
+                <a id="mobile-chat-badge" href="{% url 'chat' %}" class="badge bg-danger rounded-pill me-2 text-decoration-none" style="display: none; font-size: 1rem; padding: 0.5em 0.7em;">
+                    <i class="fa-solid fa-comment"></i> <span id="mobile-unread-count">0</span>
+                </a>
+                <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                    <span class="navbar-toggler-icon"></span>
+                </button>
+            </div>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav me-auto">
+                    <li class="nav-item">
+                        <a class="nav-link" href="{% url 'dashboard' %}"><i class="fa-solid fa-house"></i> Dashboard</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="{% url 'calendar' %}"><i class="fa-solid fa-calendar-days"></i> Calendario</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="{% url 'statistics' %}"><i class="fa-solid fa-chart-pie"></i> Statistiche</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="{% url 'utilities' %}" title="Utilità">
+                            <i class="fa-solid fa-toolbox"></i> Utilità
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="{% url 'chat' %}">
+                            <i class="fa-solid fa-comments"></i> Chat
+                            <span id="desktop-chat-badge" class="badge bg-info rounded-pill ms-1" style="display: none;">0</span>
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="{% url 'help' %}" title="Guida">
+                            <i class="fa-solid fa-circle-question"></i> Aiuto
+                        </a>
+                    </li>
+                </ul>
+                <div class="d-flex">
+                    {% if user.is_authenticated %}
+                        <span class="navbar-text me-3 d-flex align-items-center">
+                            {% if user.profile.avatar %}
+                                <img src="{{ user.profile.avatar.url }}" alt="Ava" class="rounded-circle me-2" style="width: 32px; height: 32px; object-fit: cover; border: 1px solid #dee2e6;">
+                            {% else %}
+                                <span class="rounded-circle bg-secondary text-white d-flex align-items-center justify-content-center me-2" style="width: 32px; height: 32px; font-size: 0.8rem;">
+                                    {{ user.username|make_list|first|upper }}
+                                </span>
+                            {% endif %}
+                            
+                            <span>
+                                Ciao, <strong>{{ user.username }}</strong>
+                                <a href="{% url 'profile' %}" class="text-decoration-none ms-1 text-secondary" title="Configurazione Profilo">
+                                    <i class="fa-solid fa-gear"></i>
+                                </a>
+                                <small class="text-muted d-block" style="font-size: 0.75rem; line-height: 1;">{{ user.profile.get_family_group_display }}</small>
+                            </span>
+                        </span>
+                        <form action="{% url 'logout' %}" method="post">
+                            {% csrf_token %}
+                            <button class="btn btn-outline-danger btn-sm" type="submit">Logout</button>
+                        </form>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container">
+        {% if messages %}
+            {% for message in messages %}
+                <div class="alert alert-{{ message.tags }} alert-dismissible fade show">
+                    {{ message }}
+                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                </div>
+            {% endfor %}
+        {% endif %}
+
+        {% block content %}{% endblock %}
+    </div>
+
+    <!-- Bootstrap JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <!-- HTMX -->
+    <script src="https://unpkg.com/htmx.org@1.9.10"></script>
+    <!-- SweetAlert2 -->
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    
+    <script>
+        document.body.addEventListener('htmx:configRequest', (event) => {
+            event.detail.headers['X-CSRFToken'] = '{{ csrf_token }}';
+        });
+        
+        // Check for unread chat messages
+        function checkUnreadChat() {
+            fetch('/api/chat/unread/')
+                .then(r => r.json())
+                .then(data => {
+                    updateBadge('mobile-chat-badge', data.count, 'mobile-unread-count');
+                    updateBadge('desktop-chat-badge', data.count);
+                })
+                .catch(() => {}); // Ignore errors silently
+        }
+
+        function updateBadge(badgeId, count, countId=null) {
+            const badge = document.getElementById(badgeId);
+            if (!badge) return;
+            
+            badge.style.display = 'inline-block';
+            let displayCount = count > 9 ? '9+' : count;
+            
+            if (countId) {
+                const countEl = document.getElementById(countId);
+                if (countEl) countEl.textContent = displayCount;
+            } else {
+                badge.textContent = displayCount;
+            }
+            
+            if (count > 0) {
+                badge.classList.remove('bg-info');
+                badge.classList.add('bg-danger');
+            } else {
+                badge.classList.remove('bg-danger');
+                badge.classList.add('bg-info');
+            }
+        }
+        
+        // Check immediately and every 5 seconds for near real-time updates
+        {% if user.is_authenticated %}
+        checkUnreadChat();
+        setInterval(checkUnreadChat, 5000);
+        {% endif %}
+    </script>
+    {% block extra_scripts %}{% endblock %}
+</body>
+</html>

@@ -1,0 +1,26 @@
+services:
+  web:
+    build:
+      context: .
+      target: production
+    container_name: prenopinzo-web
+    restart: unless-stopped
+    env_file:
+      - .env
+    volumes:
+      - prenopinzo_data:/app/data # Named volume for SQLite
+      - prenopinzo_static:/app/staticfiles # Named volume for static files
+      - prenopinzo_media:/app/media # Named volume for uploaded media
+    ports:
+      - "8080:8000" # External port 8080 -> container port 8000
+    networks:
+      - prenopinzo-network
+
+networks:
+  prenopinzo-network:
+    driver: bridge
+
+volumes:
+  prenopinzo_data:
+  prenopinzo_static:
+  prenopinzo_media:

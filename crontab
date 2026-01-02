@@ -1,0 +1,10 @@
+# Run every 6 hours
+0 */6 * * * appuser cd /app && /opt/venv/bin/python manage.py check_unread_messages >> /var/log/cron.log 2>&1
+
+# Run weekly pending check (Monday 08:00)
+0 8 * * 1 appuser cd /app && /opt/venv/bin/python manage.py check_pending_notification >> /var/log/cron.log 2>&1
+
+# Sync user emails from Env to DB (Every 10 minutes)
+*/10 * * * * appuser cd /app && /opt/venv/bin/python manage.py sync_user_emails >> /var/log/cron.log 2>&1
+
+# Empty line required for valid crontab

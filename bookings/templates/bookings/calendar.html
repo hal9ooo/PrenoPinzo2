@@ -1,0 +1,397 @@
+{% extends 'base.html' %}
+
+{% block title %}Calendario{% endblock %}
+
+{% block content %}
+<h2 class="mb-2">Calendario</h2>
+<div class="card">
+    <div class="card-body p-2 p-md-3" style="overflow: visible;">
+        <div id='calendar'></div>
+    </div>
+</div>
+
+<!-- Floating Action Button for mobile -->
+<!-- Floating Action Button for mobile and desktop -->
+<button id="fab-new-booking" class="fab-button" onclick="openMobileBookingForm()" title="Nuova Prenotazione">
+    <i class="fa-solid fa-plus"></i>
+</button>
+
+<!-- Mobile-friendly bottom sheet for new booking -->
+<div id="mobile-booking-sheet" class="bottom-sheet">
+    <div class="bottom-sheet-content">
+        <div class="bottom-sheet-header">
+            <h5><i class="fa-solid fa-calendar-plus me-2"></i>Nuova Prenotazione</h5>
+            <button type="button" class="btn-close" onclick="closeMobileBookingForm()"></button>
+        </div>
+        <form id="mobile-booking-form">
+            <div class="mb-3">
+                <label class="form-label">Titolo</label>
+                <input type="text" id="mobile-title" class="form-control form-control-lg" 
+                       placeholder="Es. Vacanze Estive" required>
+            </div>
+            <div class="row">
+                <div class="col-6">
+                    <label class="form-label">Dal</label>
+                    <input type="date" id="mobile-start" class="form-control form-control-lg" required>
+                </div>
+                <div class="col-6">
+                    <label class="form-label">Al</label>
+                    <input type="date" id="mobile-end" class="form-control form-control-lg" required>
+                </div>
+            </div>
+            <div class="mt-4 d-grid gap-2">
+                <button type="submit" class="btn btn-primary btn-lg">
+                    <i class="fa-solid fa-paper-plane me-2"></i>Invia Richiesta
+                </button>
+                <button type="button" class="btn btn-outline-secondary" onclick="closeMobileBookingForm()">
+                    Annulla
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+<div id="bottom-sheet-overlay" class="bottom-sheet-overlay" onclick="closeMobileBookingForm()"></div>
+{% endblock %}
+
+{% block extra_head %}
+<style>
+    /* Floating Action Button */
+    .fab-button {
+        position: fixed;
+        bottom: 20px;
+        right: 20px;
+        width: 60px;
+        height: 60px;
+        border-radius: 50%;
+        background: linear-gradient(135deg, #0d6efd 0%, #0a58ca 100%);
+        color: white;
+        border: none;
+        box-shadow: 0 4px 12px rgba(13, 110, 253, 0.4);
+        font-size: 1.5rem;
+        z-index: 1000;
+        transition: transform 0.2s, box-shadow 0.2s;
+    }
+    .fab-button:hover, .fab-button:active {
+        transform: scale(1.1);
+        box-shadow: 0 6px 16px rgba(13, 110, 253, 0.5);
+    }
+    
+    /* Bottom Sheet */
+    .bottom-sheet {
+        position: fixed;
+        bottom: -100%;
+        left: 0;
+        right: 0;
+        background: white;
+        border-radius: 20px 20px 0 0;
+        padding: 20px;
+        z-index: 1050;
+        transition: bottom 0.3s ease-out;
+        max-height: 80vh;
+        overflow-y: auto;
+    }
+    @media (min-width: 768px) {
+        .bottom-sheet {
+            left: 50%;
+            right: auto;
+            width: 500px;
+            transform: translateX(-50%);
+            border-radius: 20px 20px 0 0;
+            box-shadow: 0 -5px 20px rgba(0,0,0,0.15);
+        }
+    }
+    .bottom-sheet.active {
+        bottom: 0;
+    }
+    .bottom-sheet-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 20px;
+        padding-bottom: 15px;
+        border-bottom: 1px solid #eee;
+    }
+    .bottom-sheet-overlay {
+        position: fixed;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: rgba(0,0,0,0.5);
+        z-index: 1040;
+        display: none;
+    }
+    .bottom-sheet-overlay.active {
+        display: block;
+    }
+</style>
+{% endblock %}
+
+{% block extra_scripts %}
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        var calendarEl = document.getElementById('calendar');
+        // Detect mobile
+        var isMobile = window.innerWidth < 768;
+        var userGroup = '{{ user.profile.family_group }}';
+        
+        var calendar = new FullCalendar.Calendar(calendarEl, {
+            locale: 'it',
+            firstDay: 1, // Monday
+            initialView: 'dayGridMonth',
+            eventSources: [
+                // Booking events
+                {
+                    url: '{% url "booking_events" %}',
+                    color: 'gray'
+                },
+                // Italian holidays (background events)
+                {
+                    url: '{% url "holiday_events" %}',
+                    display: 'background'
+                }
+            ],
+            // Simpler toolbar on mobile (no Mese/Lista buttons)
+            headerToolbar: isMobile ? {
+                left: 'prev,next',
+                center: 'title',
+                right: 'today'
+            } : {
+                left: 'prev,next today',
+                center: 'title',
+                right: 'dayGridMonth,listYear'
+            },
+            buttonText: {
+                today: 'Oggi',
+                month: 'Mese',
+                list: 'Lista'
+            },
+            
+            // Auto height to prevent scroll
+            height: 'auto',
+            
+            // Enable drag & drop only on desktop (touch doesn't work well)
+            editable: !isMobile,
+            eventResizableFromStart: !isMobile,
+            eventDurationEditable: !isMobile,
+            
+            // Event callbacks
+            eventDrop: handleEventChange,
+            eventResize: handleEventChange,
+            
+            // Make only user's own events draggable
+            eventDidMount: function(info) {
+                const eventFamily = info.event.extendedProps.family_group;
+                const eventStatus = info.event.extendedProps.status;
+                
+                // Only editable if owned by user and not in DEROGA
+                if (eventFamily !== userGroup || eventStatus === 'DEROGA') {
+                    info.el.style.cursor = 'not-allowed';
+                    info.el.style.opacity = '0.7';
+                }
+            },
+            
+            // Prevent invalid drops
+            eventAllow: function(dropInfo, draggedEvent) {
+                const eventFamily = draggedEvent.extendedProps.family_group;
+                const eventStatus = draggedEvent.extendedProps.status;
+                
+                // Block if not owned or in DEROGA status
+                if (eventFamily !== userGroup || eventStatus === 'DEROGA') {
+                    return false;
+                }
+                
+                return true; // Server will validate overlaps
+            },
+            
+            selectable: true,
+            select: function(info) {
+                // Open new booking modal
+                Swal.fire({
+                    title: 'Nuova Prenotazione',
+                    html:
+                        '<input id="new-title" class="swal2-input" placeholder="Titolo (es. Vacanze Estive)">' +
+                        '<label>Dal</label><input id="new-start" class="swal2-input" type="date" value="' + info.startStr + '">' +
+                        '<label>Al</label><input id="new-end" class="swal2-input" type="date" value="' + (info.endStr || info.startStr) + '">',
+                    focusConfirm: false,
+                    showCancelButton: true,
+                    confirmButtonText: 'Crea',
+                    preConfirm: () => {
+                        return {
+                            title: document.getElementById('new-title').value,
+                            start: document.getElementById('new-start').value,
+                            end: document.getElementById('new-end').value
+                        }
+                    }
+                }).then((result) => {
+                    if (result.isConfirmed) {
+                         const data = result.value;
+                         if(!data.title) {
+                             Swal.fire('Errore', 'Inserisci un titolo', 'warning');
+                             return;
+                         }
+                         
+                         fetch('{% url "create_booking" %}', {
+                             method: 'POST',
+                             headers: {
+                                 'X-CSRFToken': '{{ csrf_token }}',
+                                 'Content-Type': 'application/x-www-form-urlencoded'
+                             },
+                             body: `title=${encodeURIComponent(data.title)}&start_date=${data.start}&end_date=${data.end}`
+                         })
+                         .then(r => r.json())
+                         .then(resp => {
+                             if(resp.status === 'ok') {
+                                 calendar.refetchEvents();
+                                 Swal.fire('Creata!', 'La richiesta è stata inviata.', 'success');
+                             } else {
+                                 Swal.fire('Errore', resp.message || JSON.stringify(resp.errors), 'error');
+                             }
+                         });
+                    }
+                });
+            }
+        });
+        
+        // Helper function to format date as YYYY-MM-DD without timezone issues
+        function formatDateLocal(date) {
+            const year = date.getFullYear();
+            const month = String(date.getMonth() + 1).padStart(2, '0');
+            const day = String(date.getDate()).padStart(2, '0');
+            return `${year}-${month}-${day}`;
+        }
+        
+        function handleEventChange(info) {
+            const event = info.event;
+            const newStart = formatDateLocal(event.start);
+            
+            // FullCalendar end is EXCLUSIVE (day after last day)
+            // We need INCLUSIVE end date for our database
+            let newEnd;
+            if (event.end) {
+                const endDate = new Date(event.end);
+                endDate.setDate(endDate.getDate() - 1); // Subtract 1 day to get inclusive end
+                newEnd = formatDateLocal(endDate);
+            } else {
+                newEnd = newStart;
+            }
+            
+            // Confirm with user
+            Swal.fire({
+                title: 'Conferma Modifica',
+                html: `Modificare la prenotazione a:<br><strong>${newStart} - ${newEnd}</strong>?`,
+                icon: 'question',
+                showCancelButton: true,
+                confirmButtonText: 'Sì, modifica',
+                cancelButtonText: 'Annulla'
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    // Send update to server
+                    fetch(`/update-dates/${event.id}/`, {
+                        method: 'POST',
+                        headers: {
+                            'X-CSRFToken': '{{ csrf_token }}',
+                            'Content-Type': 'application/x-www-form-urlencoded'
+                        },
+                        body: `start_date=${newStart}&end_date=${newEnd}`
+                    })
+                    .then(r => r.json())
+                    .then(data => {
+                        if (data.status === 'ok') {
+                            Swal.fire({
+                                title: 'Aggiornata!',
+                                text: data.message,
+                                icon: 'success'
+                            }).then(() => {
+                                calendar.refetchEvents();
+                            });
+                        } else {
+                            Swal.fire('Errore', data.message, 'error');
+                            info.revert(); // Revert the change
+                        }
+                    })
+                    .catch(() => {
+                        Swal.fire('Errore', 'Errore di connessione', 'error');
+                        info.revert();
+                    });
+                } else {
+                    info.revert(); // Revert if user cancels
+                }
+            });
+        }
+        
+        calendar.render();
+    });
+    
+    // Mobile booking form functions
+    function openMobileBookingForm() {
+        // Set default dates to today and tomorrow
+        const today = new Date();
+        const tomorrow = new Date(today);
+        tomorrow.setDate(tomorrow.getDate() + 7);
+        
+        document.getElementById('mobile-start').value = today.toISOString().split('T')[0];
+        document.getElementById('mobile-end').value = tomorrow.toISOString().split('T')[0];
+        document.getElementById('mobile-title').value = '';
+        
+        document.getElementById('mobile-booking-sheet').classList.add('active');
+        document.getElementById('bottom-sheet-overlay').classList.add('active');
+        document.getElementById('mobile-title').focus();
+    }
+    
+    function closeMobileBookingForm() {
+        document.getElementById('mobile-booking-sheet').classList.remove('active');
+        document.getElementById('bottom-sheet-overlay').classList.remove('active');
+    }
+    
+    // Handle mobile form submit
+    document.getElementById('mobile-booking-form').addEventListener('submit', function(e) {
+        e.preventDefault();
+        
+        const title = document.getElementById('mobile-title').value;
+        const startDate = document.getElementById('mobile-start').value;
+        const endDate = document.getElementById('mobile-end').value;
+        
+        if (!title || !startDate || !endDate) {
+            Swal.fire('Errore', 'Compila tutti i campi', 'warning');
+            return;
+        }
+        
+        // Show loading
+        Swal.fire({
+            title: 'Invio...',
+            allowOutsideClick: false,
+            didOpen: () => Swal.showLoading()
+        });
+        
+        fetch('{% url "create_booking" %}', {
+            method: 'POST',
+            headers: {
+                'X-CSRFToken': '{{ csrf_token }}',
+                'Content-Type': 'application/x-www-form-urlencoded'
+            },
+            body: `title=${encodeURIComponent(title)}&start_date=${startDate}&end_date=${endDate}`
+        })
+        .then(r => r.json())
+        .then(data => {
+            if (data.status === 'ok') {
+                closeMobileBookingForm();
+                Swal.fire({
+                    icon: 'success',
+                    title: 'Richiesta Inviata!',
+                    text: 'La prenotazione è in attesa di approvazione.',
+                    timer: 2000,
+                    showConfirmButton: false
+                });
+                // Refresh calendar
+                location.reload();
+            } else {
+                Swal.fire('Errore', data.message || JSON.stringify(data.errors), 'error');
+            }
+        })
+        .catch(() => {
+            Swal.fire('Errore', 'Errore di connessione', 'error');
+        });
+    });
+</script>
+{% endblock %}

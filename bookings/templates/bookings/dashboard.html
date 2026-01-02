@@ -1,0 +1,586 @@
+{% extends 'base.html' %}
+
+{% block title %}Dashboard{% endblock %}
+
+{% block content %}
+<h2 class="mb-4">Dashboard</h2>
+
+<!-- 1. Deroga Requests -->
+{% if deroga_requests %}
+<div class="card border-danger mb-4">
+    <div class="card-header bg-danger text-white">
+        <h5 class="mb-0">Richieste di Deroga (Urgenti)</h5>
+    </div>
+    <div class="card-body">
+        {% for booking in deroga_requests %}
+        <div class="alert alert-warning d-flex justify-content-between align-items-center">
+            <div>
+                <strong>{{ booking.title }}</strong><br>
+                Proprietario: {{ booking.user.username }}<br>
+                Date Attuali: {{ booking.original_start_date }} - {{ booking.original_end_date }}<br>
+                <strong class="text-danger">Nuove Date Richieste: {{ booking.start_date }} - {{ booking.end_date }}</strong><br>
+                <em>Motivo: {{ booking.deroga_note }}</em>
+            </div>
+            <div>
+                <button class="btn btn-success btn-sm me-2" onclick="approveBooking({{ booking.id }})">Accetta Modifica</button>
+                <button class="btn btn-danger btn-sm" onclick="rejectBooking({{ booking.id }})">Rifiuta Modifica</button>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+</div>
+{% endif %}
+
+<!-- 2. Approved Bookings List -->
+<div class="card mb-4">
+    <div class="card-header bg-success text-white d-flex justify-content-between align-items-center">
+        <h5 class="mb-0">Prenotazioni Approvate</h5>
+        <button type="button" class="btn btn-sm btn-link text-white p-0" data-bs-toggle="modal" data-bs-target="#historyModal" title="Vedi tutto lo storico">
+             <i class="fa-solid fa-list-check fa-lg"></i>
+        </button>
+    </div>
+    <div class="card-body">
+        <table class="table table-striped">
+            <thead>
+                <tr>
+                    <th>Prenotazione</th>
+                    <th class="hide-mobile">Famiglia</th>
+                    <th class="hide-mobile">Date</th>
+                    <th>Azioni</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for booking in approved_bookings %}
+                <tr>
+                    <td>
+                        <strong>{{ booking.title }}</strong>
+                        <span class="d-md-none mobile-booking-info">
+                            <br><small class="text-muted">{{ booking.family_group }}</small>
+                            <br><small class="mobile-date">{{ booking.start_date|date:"d/m" }} - {{ booking.end_date|date:"d/m/Y" }}</small>
+                        </span>
+                        {% if booking.status == 'DEROGA' %}
+                            <br><span class="badge bg-warning text-dark" style="font-size: 0.7rem;">🔄 Deroga in corso</span>
+                        {% endif %}
+                    </td>
+                    <td class="hide-mobile">{{ booking.get_family_group_display }}</td>
+                    <td class="hide-mobile">{{ booking.start_date|date:"d M Y" }} - {{ booking.end_date|date:"d M Y" }}</td>
+                    <td>
+                        {% if booking.family_group == user_group %}
+                            {% if booking.status != 'DEROGA' %}
+                                <button class="btn btn-outline-secondary btn-sm mb-1" onclick="showModifyModal({{ booking.id }}, '{{ booking.title }}', '{{ booking.start_date|date:'Y-m-d' }}', '{{ booking.end_date|date:'Y-m-d' }}')"><i class="fa-solid fa-pen me-1"></i>Modifica</button>
+                                <button class="btn btn-outline-danger btn-sm" onclick="deleteBooking({{ booking.id }})"><i class="fa-solid fa-trash"></i></button>
+                            {% else %}
+                                <span class="badge bg-secondary">In attesa</span>
+                            {% endif %}
+                        {% else %}
+                            {% if booking.status != 'DEROGA' %}
+                                <button class="btn btn-warning btn-sm text-dark" onclick="showDerogaModal({{ booking.id }}, '{{ booking.start_date|date:'Y-m-d' }}', '{{ booking.end_date|date:'Y-m-d' }}', '{{ booking.approved_at|date:'Y-m-d'|default:'' }}')">Deroga</button>
+                            {% else %}
+                                <span class="badge bg-warning text-dark">Richiesta</span>
+                            {% endif %}
+                        {% endif %}
+                    </td>
+                </tr>
+                {% empty %}
+                <tr><td colspan="4" class="text-center">Nessuna prenotazione approvata.</td></tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<div class="row">
+    <!-- 3. Requires Attention -->
+    <div class="col-md-4">
+        <div class="card h-100">
+            <div class="card-header bg-warning">
+                <h5 class="mb-0">Richiedono Attenzione</h5>
+            </div>
+            <div class="card-body">
+                {% for booking in requires_attention %}
+                <div class="card mb-2">
+                    <div class="card-body p-2">
+                        <h6 class="card-title">{{ booking.title }} ({{ booking.user.username }})</h6>
+                        <small>{{ booking.start_date|date:"d/m" }} - {{ booking.end_date|date:"d/m" }}</small>
+                        <div class="mt-2">
+                            <button class="btn btn-success btn-sm w-100 mb-1" onclick="approveBooking({{ booking.id }})">Approva</button>
+                            <button class="btn btn-danger btn-sm w-100" onclick="rejectBooking({{ booking.id }})">Rifiuta</button>
+                        </div>
+                    </div>
+                </div>
+                {% empty %}
+                <p class="text-muted text-center">Tutto tranquillo.</p>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+
+    <!-- 4. My Requests -->
+    <div class="col-md-4">
+        <div class="card h-100">
+            <div class="card-header bg-primary text-white">
+                <h5 class="mb-0">Le Tue Richieste</h5>
+            </div>
+            <div class="card-body">
+                {% for booking in my_requests %}
+                <div class="card mb-2">
+                     <div class="card-body p-2">
+                        <h6 class="card-title">{{ booking.title }}</h6>
+                        <small>{{ booking.start_date|date:"d/m" }} - {{ booking.end_date|date:"d/m" }}</small>
+                        <div class="mt-2">
+                             {% if booking.pending_with == user_group %}
+                                <div class="badge bg-danger mb-1">Rifiutata / Da Correggere</div>
+                                <div class="text-danger small mb-1">{{ booking.rejection_note }}</div>
+                                <button class="btn btn-primary btn-sm w-100 mb-1" onclick="showModifyModal({{ booking.id }}, '{{ booking.title }}', '{{ booking.start_date|date:'Y-m-d' }}', '{{ booking.end_date|date:'Y-m-d' }}')">Correggi</button>
+                             {% else %}
+                                <div class="badge bg-info mb-1">In Attesa di {{ booking.get_pending_with_display }}</div>
+                             {% endif %}
+                             <button class="btn btn-outline-danger btn-sm w-100" onclick="deleteBooking({{ booking.id }})"><i class="fa-solid fa-trash"></i> Cancella</button>
+                        </div>
+                    </div>
+                </div>
+                {% empty %}
+                <p class="text-muted text-center">Nessuna richiesta in corso.</p>
+                {% endfor %}
+                 <div class="mt-3 text-center">
+                    <a href="{% url 'calendar' %}" class="btn btn-outline-primary">Nuova Prenotazione</a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 5. Storico -->
+    <div class="col-md-4">
+        <div class="card h-100">
+             <div class="card-header bg-info text-white d-flex justify-content-between align-items-center">
+                <h5 class="mb-0"><i class="fa-solid fa-history"></i> Storico</h5>
+                <button type="button" class="btn btn-sm btn-link text-white p-0" data-bs-toggle="modal" data-bs-target="#auditModal" title="Vedi tutto il log">
+                     <i class="fa-solid fa-scroll fa-lg"></i>
+                </button>
+            </div>
+            <div class="card-body audit-log-body" style="max-height: 600px; overflow-y: auto;">
+                {% for audit in audit_history %}
+                <div class="card mb-2 border-start border-3 {% if audit.action == 'APPROVED' or audit.action == 'DEROGA_ACCEPTED' %}border-success{% elif audit.action == 'REJECTED' or audit.action == 'DEROGA_REJECTED' %}border-danger{% elif audit.action == 'CREATED' %}border-primary{% else %}border-warning{% endif %}">
+                    <div class="card-body p-2">
+                        <div class="d-flex justify-content-between align-items-start">
+                            <div>
+                                <strong class="text-uppercase" style="font-size: 0.85rem;">
+                                    {% if audit.action == 'CREATED' %}📝 Creata
+                                    {% elif audit.action == 'MODIFIED' %}✏️ Modificata
+                                    {% elif audit.action == 'APPROVED' %}✅ Approvata
+                                    {% elif audit.action == 'REJECTED' %}❌ Rifiutata
+                                    {% elif audit.action == 'DEROGA_REQUESTED' %}🔄 Deroga Richiesta
+                                    {% elif audit.action == 'DEROGA_ACCEPTED' %}✅ Deroga Accettata
+                                    {% elif audit.action == 'DEROGA_REJECTED' %}❌ Deroga Rifiutata
+                                    {% elif audit.action == 'CANCELLED' %}🗑️ Cancellata
+                                    {% else %}{{ audit.action }}
+                                    {% endif %}
+                                </strong>
+                            </div>
+                            <small class="text-muted">{{ audit.timestamp|date:"d/m H:i" }}</small>
+                        </div>
+                        <div class="mt-1">
+                            <small>
+                                <strong>{{ audit.booking.title }}</strong>
+                                <span class="text-muted">({{ audit.booking.get_family_group_display }})</span>
+                            </small>
+                        </div>
+                        <div>
+                            <small class="text-muted">
+                                {{ audit.booking.start_date|date:"d/m/Y" }} - {{ audit.booking.end_date|date:"d/m/Y" }}
+                            </small>
+                        </div>
+                        <div class="mt-1">
+                            <small class="text-muted">
+                                <i class="fa-solid fa-user"></i> {{ audit.performed_by.username }}
+                            </small>
+                        </div>
+                        {% if audit.details %}
+                        <div class="mt-1">
+                            <small class="fst-italic text-secondary">{{ audit.details }}</small>
+                        </div>
+                        {% endif %}
+                    </div>
+                </div>
+                {% empty %}
+                <p class="text-muted text-center">Nessuna attività registrata.</p>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- History Modal -->
+<div class="modal fade" id="historyModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-lg modal-dialog-scrollable">
+        <div class="modal-content">
+            <div class="modal-header bg-success text-white">
+                <h5 class="modal-title"><i class="fa-solid fa-history me-2"></i>Storico Prenotazioni</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body p-0">
+                <table class="table table-striped mb-0">
+                    <thead class="bg-light sticky-top">
+                        <tr>
+                            <th>Prenotazione</th>
+                            <th class="hide-mobile">Famiglia</th>
+                            <th class="hide-mobile">Date</th>
+                            <th>Azioni</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for booking in all_history_bookings %}
+                        <tr>
+                            <td>
+                                <strong>{{ booking.title }}</strong>
+                                <span class="d-md-none mobile-booking-info">
+                                    <br><small class="text-muted">{{ booking.family_group }}</small>
+                                    <br><small class="mobile-date">{{ booking.start_date|date:"d/m" }} - {{ booking.end_date|date:"d/m/Y" }}</small>
+                                </span>
+                                {% if booking.status == 'DEROGA' %}
+                                    <br><span class="badge bg-warning text-dark" style="font-size: 0.7rem;">🔄 Deroga in corso</span>
+                                {% endif %}
+                            </td>
+                            <td class="hide-mobile">{{ booking.get_family_group_display }}</td>
+                            <td class="hide-mobile">{{ booking.start_date|date:"d M Y" }} - {{ booking.end_date|date:"d M Y" }}</td>
+                            <td>
+                                {% if booking.family_group == user_group %}
+                                    {% if booking.status != 'DEROGA' %}
+                                        <button class="btn btn-outline-secondary btn-sm mb-1" onclick="showModifyModal({{ booking.id }}, '{{ booking.title|escapejs }}', '{{ booking.start_date|date:'Y-m-d' }}', '{{ booking.end_date|date:'Y-m-d' }}')" data-bs-dismiss="modal"><i class="fa-solid fa-pen"></i></button>
+                                        <button class="btn btn-outline-danger btn-sm" onclick="deleteBooking({{ booking.id }})" data-bs-dismiss="modal"><i class="fa-solid fa-trash"></i></button>
+                                    {% else %}
+                                        <span class="badge bg-secondary">In attesa</span>
+                                    {% endif %}
+                                {% else %}
+                                    {% if booking.status != 'DEROGA' %}
+                                        <button class="btn btn-warning btn-sm text-dark" onclick="showDerogaModal({{ booking.id }}, '{{ booking.start_date|date:'Y-m-d' }}', '{{ booking.end_date|date:'Y-m-d' }}', '{{ booking.approved_at|date:'Y-m-d'|default:'' }}')" data-bs-dismiss="modal">Deroga</button>
+                                    {% else %}
+                                        <span class="badge bg-warning text-dark">Richiesta</span>
+                                    {% endif %}
+                                {% endif %}
+                            </td>
+                        </tr>
+                        {% empty %}
+                        <tr><td colspan="4" class="text-center">Nessuna prenotazione nello storico.</td></tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Chiudi</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- All Audit Log Modal -->
+<div class="modal fade" id="auditModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-lg modal-dialog-scrollable">
+        <div class="modal-content">
+            <div class="modal-header bg-info text-white">
+                <h5 class="modal-title"><i class="fa-solid fa-scroll me-2"></i>Storico Log Completo</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body bg-light">
+                {% for audit in all_audit_history %}
+                <div class="card mb-2 border-start border-3 {% if audit.action == 'APPROVED' or audit.action == 'DEROGA_ACCEPTED' %}border-success{% elif audit.action == 'REJECTED' or audit.action == 'DEROGA_REJECTED' %}border-danger{% elif audit.action == 'CREATED' %}border-primary{% else %}border-warning{% endif %}">
+                    <div class="card-body p-2">
+                        <div class="d-flex justify-content-between align-items-start">
+                            <div>
+                                <strong class="text-uppercase" style="font-size: 0.85rem;">
+                                    {% if audit.action == 'CREATED' %}📝 Creata
+                                    {% elif audit.action == 'MODIFIED' %}✏️ Modificata
+                                    {% elif audit.action == 'APPROVED' %}✅ Approvata
+                                    {% elif audit.action == 'REJECTED' %}❌ Rifiutata
+                                    {% elif audit.action == 'DEROGA_REQUESTED' %}🔄 Deroga Richiesta
+                                    {% elif audit.action == 'DEROGA_ACCEPTED' %}✅ Deroga Accettata
+                                    {% elif audit.action == 'DEROGA_REJECTED' %}❌ Deroga Rifiutata
+                                    {% elif audit.action == 'CANCELLED' %}🗑️ Cancellata
+                                    {% else %}{{ audit.action }}
+                                    {% endif %}
+                                </strong>
+                            </div>
+                            <small class="text-muted">{{ audit.timestamp|date:"d/m/Y H:i" }}</small>
+                        </div>
+                        <div class="mt-1">
+                            <small>
+                                <strong>{{ audit.booking.title }}</strong>
+                                <span class="text-muted">({{ audit.booking.get_family_group_display }})</span>
+                            </small>
+                        </div>
+                        <div>
+                            <small class="text-muted">
+                                {{ audit.booking.start_date|date:"d/m/Y" }} - {{ audit.booking.end_date|date:"d/m/Y" }}
+                            </small>
+                        </div>
+                        <div class="mt-1">
+                            <small class="text-muted">
+                                <i class="fa-solid fa-user"></i> {{ audit.performed_by.username }}
+                            </small>
+                        </div>
+                        {% if audit.details %}
+                        <div class="mt-1">
+                            <small class="fst-italic text-secondary">{{ audit.details }}</small>
+                        </div>
+                        {% endif %}
+                    </div>
+                </div>
+                {% empty %}
+                <p class="text-muted text-center">Nessuna attività registrata.</p>
+                {% endfor %}
+            </div>
+             <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Chiudi</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% endblock %}
+
+{% block extra_scripts %}
+<script>
+    // Helper function to format date as dd/mm/yyyy
+    function formatDate(dateStr) {
+        const d = new Date(dateStr);
+        return d.toLocaleDateString('it-IT', { day: '2-digit', month: '2-digit', year: 'numeric' });
+    }
+
+    function approveBooking(id) {
+        Swal.fire({
+            title: 'Sei sicuro?',
+            text: "Vuoi approvare questa prenotazione?",
+            icon: 'question',
+            showCancelButton: true,
+            confirmButtonText: 'Sì, approva',
+            cancelButtonText: 'Annulla'
+        }).then((result) => {
+            if (result.isConfirmed) {
+                fetch(`/approve/${id}/`, {
+                    method: 'POST',
+                    headers: {'X-CSRFToken': '{{ csrf_token }}'}
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if(data.status === 'ok') {
+                        Swal.fire('Approvata!', '', 'success').then(() => location.reload());
+                    } else {
+                        Swal.fire('Errore', data.message || 'Errore sconosciuto', 'error');
+                    }
+                });
+            }
+        });
+    }
+
+    function rejectBooking(id) {
+        Swal.fire({
+            title: 'Rifiuta Prenotazione',
+            input: 'textarea',
+            inputLabel: 'Motivazione del rifiuto',
+            inputPlaceholder: 'Scrivi qui la motivazione logic...',
+            inputAttributes: {
+                'aria-label': 'Motivazione del rifiuto'
+            },
+            showCancelButton: true,
+            confirmButtonText: 'Rifiuta',
+            showLoaderOnConfirm: true,
+            preConfirm: (note) => {
+                if (!note) {
+                    Swal.showValidationMessage('Per favore inserisci una motivazione')
+                }
+                return fetch(`/reject/${id}/`, {
+                    method: 'POST',
+                    headers: {
+                        'X-CSRFToken': '{{ csrf_token }}',
+                        'Content-Type': 'application/x-www-form-urlencoded'
+                    },
+                    body: `note=${encodeURIComponent(note)}`
+                })
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error(response.statusText)
+                    }
+                    return response.json()
+                })
+                .catch(error => {
+                    Swal.showValidationMessage(
+                        `Request failed: ${error}`
+                    )
+                })
+            },
+            allowOutsideClick: () => !Swal.isLoading()
+        }).then((result) => {
+            if (result.isConfirmed) {
+                Swal.fire('Rifiutata!', 'La prenotazione è stata rifiutata.', 'success').then(() => location.reload());
+            }
+        })
+    }
+
+    function showDerogaModal(id, currentStart, currentEnd, approvedAt) {
+        // Check if approval is older than 30 days
+        let warningHtml = '';
+        if (approvedAt) {
+            const approvalDate = new Date(approvedAt);
+            const thirtyDaysAgo = new Date();
+            thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
+            
+            if (approvalDate < thirtyDaysAgo) {
+                const formattedDate = approvalDate.toLocaleDateString('it-IT', { day: '2-digit', month: 'long', year: 'numeric' });
+                warningHtml = `<div class="alert alert-warning py-2 mb-3"><i class="fa-solid fa-exclamation-triangle"></i> <strong>Attenzione:</strong> Questa prenotazione è stata approvata il <strong>${formattedDate}</strong>. La richiesta di deroga dovrebbe essere utilizzata solo in casi di reale forza maggiore.</div>`;
+            }
+        }
+        
+         Swal.fire({
+            title: 'Richiedi Modifica',
+            html:
+                '<div class="text-start">' +
+                warningHtml +
+                '<p class="mb-2"><strong>Periodo attuale:</strong></p>' +
+                `<div class="alert alert-info py-2 mb-3">${formatDate(currentStart)} → ${formatDate(currentEnd)}</div>` +
+                '<div class="mb-3">' +
+                '<label class="form-label fw-bold">Nuova data inizio</label>' +
+                `<input id="swal-start" class="form-control form-control-lg" type="date" value="${currentStart}">` +
+                '</div>' +
+                '<div class="mb-3">' +
+                '<label class="form-label fw-bold">Nuova data fine</label>' +
+                `<input id="swal-end" class="form-control form-control-lg" type="date" value="${currentEnd}">` +
+                '</div>' +
+                '<div class="mb-2">' +
+                '<label class="form-label fw-bold">Motivo della richiesta</label>' +
+                '<textarea id="swal-note" class="form-control" rows="3" placeholder="Es: Abbiamo bisogno della casa per..."></textarea>' +
+                '</div>' +
+                '</div>',
+            focusConfirm: false,
+            showCancelButton: true,
+            confirmButtonText: '<i class="fa-solid fa-paper-plane me-1"></i> Invia',
+            cancelButtonText: 'Annulla',
+            buttonsStyling: true,
+            customClass: {
+                popup: 'swal-mobile-popup',
+                confirmButton: 'btn btn-primary btn-lg me-2',
+                cancelButton: 'btn btn-secondary btn-lg'
+            },
+            didOpen: () => {
+                // Prevent iOS from auto-opening datepicker
+                document.activeElement.blur();
+            },
+            preConfirm: () => {
+                return [
+                    document.getElementById('swal-start').value,
+                    document.getElementById('swal-end').value,
+                    document.getElementById('swal-note').value
+                ]
+            }
+        }).then((result) => {
+            if (result.isConfirmed) {
+                const [start, end, note] = result.value;
+                if(!start || !end || !note) {
+                    Swal.fire('Errore', 'Tutti i campi sono obbligatori', 'error');
+                    return;
+                }
+                
+                fetch(`/request-deroga/${id}/`, {
+                    method: 'POST',
+                    headers: {
+                        'X-CSRFToken': '{{ csrf_token }}',
+                        'Content-Type': 'application/x-www-form-urlencoded'
+                    },
+                    body: `new_start_date=${start}&new_end_date=${end}&note=${encodeURIComponent(note)}`
+                })
+                .then(r => r.json())
+                .then(data => {
+                    if(data.status === 'ok') {
+                        Swal.fire('Inviata!', 'Richiesta di deroga inviata.', 'success').then(() => location.reload());
+                    } else {
+                        Swal.fire('Errore', JSON.stringify(data.errors || data.message), 'error');
+                    }
+                });
+            }
+        })
+    }
+    
+    function showModifyModal(id, currentTitle, currentStart, currentEnd) {
+        Swal.fire({
+            title: 'Modifica Prenotazione',
+            html:
+                '<div class="text-start">' +
+                `<p class="mb-3 text-center"><strong class="fs-5">${currentTitle}</strong></p>` +
+                '<div class="mb-3">' +
+                '<label class="form-label fw-bold">Data inizio</label>' +
+                `<input id="mod-start" class="form-control form-control-lg" type="date" value="${currentStart}">` +
+                '</div>' +
+                '<div class="mb-2">' +
+                '<label class="form-label fw-bold">Data fine</label>' +
+                `<input id="mod-end" class="form-control form-control-lg" type="date" value="${currentEnd}">` +
+                '</div>' +
+                '</div>',
+            focusConfirm: false,
+            showCancelButton: true,
+            confirmButtonText: '<i class="fa-solid fa-check me-1"></i> Salva',
+            cancelButtonText: 'Annulla',
+            customClass: {
+                confirmButton: 'btn btn-success btn-lg me-2',
+                cancelButton: 'btn btn-secondary btn-lg'
+            },
+            didOpen: () => {
+                // Prevent iOS from auto-opening datepicker
+                document.activeElement.blur();
+            },
+            preConfirm: () => {
+                return [
+                    document.getElementById('mod-start').value,
+                    document.getElementById('mod-end').value
+                ]
+            }
+        }).then((result) => {
+            if (result.isConfirmed) {
+                const [start, end] = result.value;
+                fetch(`/modify/${id}/`, {
+                    method: 'POST',
+                    headers: {
+                        'X-CSRFToken': '{{ csrf_token }}',
+                        'Content-Type': 'application/x-www-form-urlencoded'
+                    },
+                    body: `start_date=${start}&end_date=${end}&title=${currentTitle}` // Sending title back just to satisfy form
+                })
+                .then(r => r.json())
+                .then(data => {
+                    if(data.status === 'ok') {
+                        Swal.fire('Modificata!', 'La prenotazione è stata aggiornata.', 'success').then(() => location.reload());
+                    } else {
+                        Swal.fire('Errore', JSON.stringify(data.errors), 'error');
+                    }
+                });
+            }
+        })
+    }
+
+    function deleteBooking(id) {
+        Swal.fire({
+            title: 'Sei sicuro?',
+            text: "Questa azione cancellerà definitivamente la prenotazione!",
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonColor: '#d33',
+            cancelButtonColor: '#3085d6',
+            confirmButtonText: 'Sì, cancella!',
+            cancelButtonText: 'Annulla'
+        }).then((result) => {
+            if (result.isConfirmed) {
+                fetch(`/delete/${id}/`, {
+                    method: 'POST',
+                    headers: {'X-CSRFToken': '{{ csrf_token }}'}
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if(data.status === 'ok') {
+                        Swal.fire('Cancellata!', 'La prenotazione è stata cancellata.', 'success').then(() => location.reload());
+                    } else {
+                        Swal.fire('Errore', data.message || 'Errore sconosciuto', 'error');
+                    }
+                });
+            }
+        });
+    }
+</script>
+{% endblock %}

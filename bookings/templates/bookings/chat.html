@@ -1,0 +1,450 @@
+{% extends 'base.html' %}
+
+{% block title %}Chat{% endblock %}
+
+{% block extra_head %}
+<style>
+    .chat-container {
+        display: flex;
+        flex-direction: column;
+        height: calc(100vh - 120px);
+        max-height: 700px;
+    }
+    
+    .chat-messages {
+        flex: 1;
+        overflow-y: auto;
+        padding: 15px;
+        background: #f8f9fa;
+        border-radius: 10px;
+    }
+    
+    .message {
+        max-width: 80%;
+        margin-bottom: 10px;
+        padding: 10px 15px;
+        border-radius: 18px;
+        position: relative;
+        word-wrap: break-word;
+    }
+    
+    .message.mine {
+        background: linear-gradient(135deg, #0d6efd 0%, #0a58ca 100%);
+        color: white;
+        margin-left: auto;
+        border-bottom-right-radius: 4px;
+    }
+    
+    .message.theirs {
+        background: white;
+        border: 1px solid #e0e0e0;
+        border-bottom-left-radius: 4px;
+    }
+    
+    .message-sender {
+        font-size: 0.75rem;
+        opacity: 0.8;
+        margin-bottom: 2px;
+    }
+    
+    .message-time {
+        font-size: 0.65rem;
+        opacity: 0.7;
+        text-align: right;
+        margin-top: 4px;
+    }
+    
+    .message.theirs .message-time {
+        color: #888;
+    }
+    
+    .chat-input-area {
+        display: flex;
+        gap: 10px;
+        padding: 15px;
+        background: white;
+        border-top: 1px solid #eee;
+    }
+    
+    .chat-input {
+        flex: 1;
+        border: 1px solid #ddd;
+        border-radius: 25px;
+        padding: 12px 20px;
+        font-size: 1rem;
+        outline: none;
+    }
+    
+    .chat-input:focus {
+        border-color: #0d6efd;
+    }
+    
+    .send-btn {
+        width: 50px;
+        height: 50px;
+        border-radius: 50%;
+        background: linear-gradient(135deg, #0d6efd 0%, #0a58ca 100%);
+        color: white;
+        border: none;
+        font-size: 1.2rem;
+    }
+    
+    .emoji-btn {
+        width: 50px;
+        height: 50px;
+        border-radius: 50%;
+        background: #f0f0f0;
+        border: none;
+        font-size: 1.3rem;
+    }
+    
+    .typing-indicator {
+        font-size: 0.8rem;
+        color: #888;
+        padding: 5px 15px;
+        font-style: italic;
+        display: none;
+    }
+    
+    .typing-indicator.active {
+        display: block;
+    }
+    
+    .date-separator {
+        text-align: center;
+        color: #888;
+        font-size: 0.75rem;
+        margin: 15px 0;
+    }
+    
+    .date-separator span {
+        background: #e9ecef;
+        padding: 4px 12px;
+        border-radius: 10px;
+    }
+    
+    .status-indicator {
+        font-size: 0.8rem;
+        padding: 8px 15px;
+        background: #e8f5e9;
+        border-radius: 5px;
+        margin-bottom: 10px;
+        display: none;
+    }
+    
+    .status-indicator.active {
+        display: block;
+    }
+    
+    .emoji-picker-container {
+        position: fixed;
+        bottom: 80px;
+        left: 10px;
+        right: 10px;
+        background: white;
+        border-radius: 10px;
+        box-shadow: 0 -4px 20px rgba(0,0,0,0.15);
+        padding: 10px;
+        display: none;
+        z-index: 100;
+    }
+    
+    .emoji-picker-container.active {
+        display: block;
+    }
+    
+    .emoji-grid {
+        display: grid;
+        grid-template-columns: repeat(8, 1fr);
+        gap: 5px;
+        max-height: 200px;
+        overflow-y: auto;
+    }
+    
+    .emoji-item {
+        font-size: 1.5rem;
+        text-align: center;
+        padding: 5px;
+        cursor: pointer;
+        border-radius: 5px;
+    }
+    
+    .emoji-item:hover {
+        background: #f0f0f0;
+    }
+    
+    @media (max-width: 768px) {
+        .chat-container {
+            height: calc(100vh - 200px);
+            max-height: calc(100vh - 200px);
+        }
+        .chat-messages {
+            flex: 1;
+            min-height: 0;
+        }
+        .chat-input-area {
+            padding: 10px;
+            gap: 8px;
+            flex-shrink: 0;
+        }
+        .emoji-btn, .send-btn {
+            width: 44px;
+            height: 44px;
+            flex-shrink: 0;
+        }
+        .chat-input {
+            padding: 10px 15px;
+        }
+        .message {
+            max-width: 85%;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-2">
+    <h4 class="mb-0"><i class="fa-solid fa-comments me-2"></i>Chat Famiglia</h4>
+    <span id="online-status" class="badge bg-secondary">Connessione...</span>
+</div>
+
+<div id="status-indicator" class="status-indicator"></div>
+
+<div class="card">
+    <div class="chat-container">
+        <div id="chat-messages" class="chat-messages">
+            <!-- Messages will be inserted here -->
+        </div>
+        
+        <div id="typing-indicator" class="typing-indicator">
+            <i class="fa-solid fa-ellipsis fa-beat-fade"></i> <span id="typing-user"></span> sta scrivendo...
+        </div>
+        
+        <div class="chat-input-area">
+            <button type="button" class="emoji-btn" onclick="toggleEmojiPicker()">
+                😀
+            </button>
+            <input type="text" id="chat-input" class="chat-input" 
+                   placeholder="Scrivi un messaggio..." autocomplete="off">
+            <button type="button" class="send-btn" onclick="sendMessage()">
+                <i class="fa-solid fa-paper-plane"></i>
+            </button>
+        </div>
+    </div>
+</div>
+
+<!-- Emoji Picker -->
+<div id="emoji-picker" class="emoji-picker-container">
+    <div class="emoji-grid">
+        {% for emoji in "😀😃😄😁😆😅🤣😂🙂🙃😉😊😇🥰😍🤩😘😗☺😚😙🥲😋😛😜🤪😝🤑🤗🤭🤫🤔🤐🤨😐😑😶😏😒🙄😬🤯😳🥵🥶😱😨😰😥😢😭😤😠😡🤬🤡👍👎👊✊🤞✌🤟🤙👋🙏💪🏖️🏠🌞🌴⛱️🍺🍻🍷🎉🎊✈️🚗" %}
+        <span class="emoji-item" onclick="insertEmoji('{{ emoji }}')">{{ emoji }}</span>
+        {% endfor %}
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_scripts %}
+<script>
+    const currentUser = '{{ user.username }}';
+    const currentFamily = '{{ user.profile.family_group }}';
+    let chatSocket = null;
+    let typingTimeout = null;
+    let lastTypingSent = 0;
+    
+    // Connect WebSocket
+    function connectWebSocket() {
+        const wsScheme = window.location.protocol === 'https:' ? 'wss' : 'ws';
+        chatSocket = new WebSocket(`${wsScheme}://${window.location.host}/ws/chat/`);
+        
+        chatSocket.onopen = function(e) {
+            document.getElementById('online-status').textContent = 'Online';
+            document.getElementById('online-status').className = 'badge bg-success';
+        };
+        
+        chatSocket.onclose = function(e) {
+            document.getElementById('online-status').textContent = 'Offline';
+            document.getElementById('online-status').className = 'badge bg-danger';
+            // Reconnect after 3 seconds
+            setTimeout(connectWebSocket, 3000);
+        };
+        
+        chatSocket.onerror = function(e) {
+            console.error('WebSocket error:', e);
+        };
+        
+        chatSocket.onmessage = function(e) {
+            const data = JSON.parse(e.data);
+            handleMessage(data);
+        };
+    }
+    
+    function handleMessage(data) {
+        switch(data.type) {
+            case 'chat_history':
+                renderHistory(data.messages);
+                break;
+            case 'message':
+                appendMessage(data);
+                break;
+            case 'typing':
+                showTypingIndicator(data.username, data.is_typing);
+                break;
+            case 'status':
+                showStatusMessage(data.username, data.status);
+                break;
+        }
+    }
+    
+    function renderHistory(messages) {
+        const container = document.getElementById('chat-messages');
+        container.innerHTML = '';
+        
+        let lastDate = null;
+        messages.forEach(msg => {
+            // Add date separator if needed
+            if (msg.date !== lastDate) {
+                container.innerHTML += `<div class="date-separator"><span>${msg.date}</span></div>`;
+                lastDate = msg.date;
+            }
+            appendMessage(msg, false);
+        });
+        
+        scrollToBottom();
+    }
+    
+    function appendMessage(msg, scroll = true) {
+        const container = document.getElementById('chat-messages');
+        const isMine = msg.sender === currentUser;
+        
+        const messageHtml = `
+            <div class="message ${isMine ? 'mine' : 'theirs'}">
+                ${!isMine ? `<div class="message-sender">${msg.sender} (${msg.sender_family})</div>` : ''}
+                <div class="message-content">${escapeHtml(msg.content)}</div>
+                <div class="message-time">${msg.timestamp}</div>
+            </div>
+        `;
+        
+        container.insertAdjacentHTML('beforeend', messageHtml);
+        
+        if (scroll) {
+            scrollToBottom();
+        }
+    }
+    
+    function escapeHtml(text) {
+        const div = document.createElement('div');
+        div.textContent = text;
+        return div.innerHTML;
+    }
+    
+    function scrollToBottom() {
+        const container = document.getElementById('chat-messages');
+        container.scrollTop = container.scrollHeight;
+    }
+    
+    function sendMessage() {
+        const input = document.getElementById('chat-input');
+        const content = input.value.trim();
+        
+        if (content && chatSocket && chatSocket.readyState === WebSocket.OPEN) {
+            chatSocket.send(JSON.stringify({
+                type: 'message',
+                content: content
+            }));
+            input.value = '';
+            
+            // Stop typing indicator
+            chatSocket.send(JSON.stringify({
+                type: 'typing',
+                is_typing: false
+            }));
+        }
+        
+        // Close emoji picker
+        document.getElementById('emoji-picker').classList.remove('active');
+    }
+    
+    function showTypingIndicator(username, isTyping) {
+        const indicator = document.getElementById('typing-indicator');
+        const userSpan = document.getElementById('typing-user');
+        
+        if (isTyping) {
+            userSpan.textContent = username;
+            indicator.classList.add('active');
+        } else {
+            indicator.classList.remove('active');
+        }
+    }
+    
+    function showStatusMessage(username, status) {
+        const indicator = document.getElementById('status-indicator');
+        indicator.textContent = `${username} è ${status === 'online' ? 'entrato' : 'uscito'} dalla chat`;
+        indicator.classList.add('active');
+        
+        setTimeout(() => {
+            indicator.classList.remove('active');
+        }, 3000);
+    }
+    
+    function toggleEmojiPicker() {
+        document.getElementById('emoji-picker').classList.toggle('active');
+    }
+    
+    function insertEmoji(emoji) {
+        const input = document.getElementById('chat-input');
+        input.value += emoji;
+        input.focus();
+    }
+    
+    // Event listeners
+    document.getElementById('chat-input').addEventListener('keypress', function(e) {
+        if (e.key === 'Enter') {
+            sendMessage();
+        }
+    });
+    
+    // Typing indicator - send every 2 seconds max
+    document.getElementById('chat-input').addEventListener('input', function() {
+        const now = Date.now();
+        if (now - lastTypingSent > 2000 && chatSocket && chatSocket.readyState === WebSocket.OPEN) {
+            chatSocket.send(JSON.stringify({
+                type: 'typing',
+                is_typing: true
+            }));
+            lastTypingSent = now;
+        }
+        
+        // Clear previous timeout
+        clearTimeout(typingTimeout);
+        
+        // Stop typing after 3 seconds of no input
+        typingTimeout = setTimeout(() => {
+            if (chatSocket && chatSocket.readyState === WebSocket.OPEN) {
+                chatSocket.send(JSON.stringify({
+                    type: 'typing',
+                    is_typing: false
+                }));
+            }
+        }, 3000);
+    });
+    
+    // Close emoji picker when clicking outside
+    document.addEventListener('click', function(e) {
+        const picker = document.getElementById('emoji-picker');
+        const emojiBtn = document.querySelector('.emoji-btn');
+        if (!picker.contains(e.target) && e.target !== emojiBtn) {
+            picker.classList.remove('active');
+        }
+    });
+    
+    // Connect on page load
+    connectWebSocket();
+    
+    // Mark messages as read when page is visible
+    document.addEventListener('visibilitychange', function() {
+        if (!document.hidden && chatSocket && chatSocket.readyState === WebSocket.OPEN) {
+            chatSocket.send(JSON.stringify({ type: 'mark_read' }));
+        }
+    });
+</script>
+{% endblock %}

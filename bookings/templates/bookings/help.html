@@ -1,0 +1,372 @@
+{% extends 'base.html' %}
+
+{% block title %}Guida - Come Usare PrenoPinzo{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+    <div class="row">
+        <div class="col-lg-10 mx-auto">
+            <div class="text-center mb-5">
+                <h1 class="display-4"><i class="fa-solid fa-circle-question text-primary"></i> Guida PrenoPinzo</h1>
+                <p class="lead text-muted">Tutto quello che devi sapere per gestire le prenotazioni della casa vacanze</p>
+            </div>
+
+            <!-- Introduzione -->
+            <div class="card mb-4">
+                <div class="card-header bg-primary text-white">
+                    <h3 class="mb-0"><i class="fa-solid fa-info-circle"></i> Cos'è PrenoPinzo?</h3>
+                </div>
+                <div class="card-body">
+                    <p class="lead">PrenoPinzo è un sistema per gestire le prenotazioni della vostra casa vacanze condivisa tra due famiglie: <strong>Famiglia Andrea</strong> e <strong>Famiglia Fabrizio</strong>.</p>
+                    <p>Il sistema garantisce che entrambe le famiglie abbiano pari diritti e che ogni prenotazione sia approvata da entrambe le parti prima di essere confermata.</p>
+                </div>
+            </div>
+
+            <!-- Come Funziona -->
+            <div class="card mb-4">
+                <div class="card-header bg-success text-white">
+                    <h3 class="mb-0"><i class="fa-solid fa-gears"></i> Come Funziona</h3>
+                </div>
+                <div class="card-body">
+                    <ol class="list-group list-group-numbered">
+                        <li class="list-group-item">
+                            <strong>Fai una richiesta</strong> - Scegli le date che desideri per le tue vacanze
+                        </li>
+                        <li class="list-group-item">
+                            <strong>L'altra famiglia riceve una notifica</strong> - Via email e sulla dashboard
+                        </li>
+                        <li class="list-group-item">
+                            <strong>L'altra famiglia può:</strong>
+                            <ul class="mt-2">
+                                <li>✅ Approvare la tua richiesta</li>
+                                <li>❌ Rifiutare e chiederti di modificare le date</li>
+                            </ul>
+                        </li>
+                        <li class="list-group-item">
+                            <strong>Una volta approvata</strong> - La prenotazione è confermata e appare nel calendario!
+                        </li>
+                    </ol>
+                </div>
+            </div>
+
+            <!-- Creare una Prenotazione -->
+            <div class="card mb-4">
+                <div class="card-header bg-info text-white">
+                    <h3 class="mb-0"><i class="fa-solid fa-calendar-plus"></i> Come Creare una Prenotazione</h3>
+                </div>
+                <div class="card-body">
+                    <h5>📅 Metodo 1: Dal Calendario</h5>
+                    <ol>
+                        <li>Vai alla pagina <strong>Calendario</strong></li>
+                        <li>Clicca su una data libera o seleziona un periodo</li>
+                        <li>Inserisci un titolo (es. "Vacanze Estive")</li>
+                        <li>Scegli data di inizio e fine</li>
+                        <li>Clicca "Crea"</li>
+                    </ol>
+                    
+                    <hr>
+                    
+                    <h5>📋 Metodo 2: Dalla Dashboard</h5>
+                    <ol>
+                        <li>Nella sezione "Le Tue Richieste"</li>
+                        <li>Clicca su "Nuova Prenotazione"</li>
+                        <li>Compila il form e invia</li>
+                    </ol>
+                    
+                    <div class="alert alert-info mt-3">
+                        <i class="fa-solid fa-lightbulb"></i> <strong>Suggerimento:</strong> Riceverai una email di conferma quando l'altra famiglia approverà la tua richiesta!
+                    </div>
+                </div>
+            </div>
+
+            <!-- Dashboard -->
+            <div class="card mb-4">
+                <div class="card-header bg-warning">
+                    <h3 class="mb-0"><i class="fa-solid fa-table-columns"></i> La Dashboard - Il Tuo Centro di Controllo</h3>
+                </div>
+                <div class="card-body">
+                    <p>La dashboard è divisa in sezioni colorate per facilità:</p>
+                    
+                    <div class="row mt-3">
+                        <div class="col-md-6 mb-3">
+                            <div class="card border-danger">
+                                <div class="card-body">
+                                    <h5 class="text-danger"><i class="fa-solid fa-exclamation-triangle"></i> Richieste di Deroga</h5>
+                                    <p class="small mb-0">Richieste <strong>urgenti</strong> di modifica su tue prenotazioni già approvate. Devi rispondere!</p>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="col-md-6 mb-3">
+                            <div class="card border-success">
+                                <div class="card-body">
+                                    <h5 class="text-success"><i class="fa-solid fa-check"></i> Prenotazioni Approvate</h5>
+                                    <p class="small mb-0">Tutte le prenotazioni confermate. Da qui puoi modificare o cancellare le tue.</p>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="col-md-6 mb-3">
+                            <div class="card border-warning">
+                                <div class="card-body">
+                                    <h5 class="text-warning"><i class="fa-solid fa-bell"></i> Richiedono Attenzione</h5>
+                                    <p class="small mb-0">Richieste dell'altra famiglia che aspettano la <strong>tua</strong> approvazione o rifiuto.</p>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="col-md-6 mb-3">
+                            <div class="card border-primary">
+                                <div class="card-body">
+                                    <h5 class="text-primary"><i class="fa-solid fa-paper-plane"></i> Le Tue Richieste</h5>
+                                    <p class="small mb-0">Le tue prenotazioni in attesa di approvazione o che necessitano correzioni.</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Deroga -->
+            <div class="card mb-4">
+                <div class="card-header bg-danger text-white">
+                    <h3 class="mb-0"><i class="fa-solid fa-arrows-rotate"></i> Cos'è una "Deroga"?</h3>
+                </div>
+                <div class="card-body">
+                    <p class="lead">Una Deroga è una <strong>richiesta di modifica</strong> su una prenotazione già approvata.</p>
+                    
+                    <h5 class="mt-4">📖 Esempio Pratico:</h5>
+                    <div class="alert alert-light border">
+                        <p>La Famiglia Andrea ha una prenotazione approvata dal 10 al 20 Agosto.</p>
+                        <p>La Famiglia Fabrizio ha bisogno proprio di quei giorni e può chiedere ad Andrea di spostarsi, usando il pulsante <span class="badge bg-warning">Richiedi Modifica</span>.</p>
+                        <p class="mb-0"><strong>Attenzione:</strong> Andrea può accettare o rifiutare la richiesta. Se rifiuta, la sua prenotazione originale rimane valida!</p>
+                    </div>
+                    
+                    <h5 class="mt-3">Come Richiedere una Deroga:</h5>
+                    <ol>
+                        <li>Vai alla tabella "Prenotazioni Approvate"</li>
+                        <li>Trova la prenotazione dell'altra famiglia che vorresti spostare</li>
+                        <li>Clicca "Richiedi Modifica"</li>
+                        <li>Inserisci le nuove date proposte e una motivazione</li>
+                        <li>Invia la richiesta</li>
+                    </ol>
+                </div>
+            </div>
+
+            <!-- Calendario -->
+            <div class="card mb-4">
+                <div class="card-header bg-secondary text-white">
+                    <h3 class="mb-0"><i class="fa-solid fa-calendar"></i> Leggere il Calendario</h3>
+                </div>
+                <div class="card-body">
+                    <p>Il calendario usa colori diversi per identificare lo stato delle prenotazioni:</p>
+                    
+                    <div class="row">
+                        <div class="col-md-6">
+                            <ul class="list-unstyled">
+                                <li class="mb-2"><span class="badge" style="background-color: green;">Verde</span> = Prenotazione Approvata (Famiglia Andrea)</li>
+                                <li class="mb-2"><span class="badge" style="background-color: blue;">Blu</span> = Prenotazione Approvata (Famiglia Fabrizio)</li>
+                                <li class="mb-2"><span class="badge" style="background-color: gold; color: black;">Giallo</span> = Tue richieste in attesa</li>
+                                <li class="mb-2"><span class="badge" style="background-color: orange;">Arancione</span> = Richieste dell'altra famiglia in attesa</li>
+                            </ul>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="alert alert-info">
+                                <i class="fa-solid fa-mouse-pointer"></i> <strong>Interazioni:</strong>
+                                <ul class="mt-2 mb-0">
+                                    <li>Clicca su uno spazio vuoto per creare una nuova prenotazione</li>
+                                    <li>Clicca su un evento per vedere i dettagli</li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Drag & Drop -->
+            <div class="card mb-4">
+                <div class="card-header" style="background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%); color: white;">
+                    <h3 class="mb-0"><i class="fa-solid fa-hand-pointer"></i> Drag & Drop - Modifica Rapida</h3>
+                </div>
+                <div class="card-body">
+                    <p class="lead">Puoi modificare le tue prenotazioni direttamente dal calendario <strong>trascinandole</strong>!</p>
+                    
+                    <h5 class="mt-4">🖱️ Come Funziona:</h5>
+                    <div class="row">
+                        <div class="col-md-4 mb-3">
+                            <div class="card h-100 border-primary">
+                                <div class="card-body text-center">
+                                    <i class="fa-solid fa-arrows-left-right fa-2x text-primary mb-2"></i>
+                                    <h6>Sposta Periodo</h6>
+                                    <p class="small">Clicca e trascina l'evento per spostare l'intero periodo a nuove date</p>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-4 mb-3">
+                            <div class="card h-100 border-success">
+                                <div class="card-body text-center">
+                                    <i class="fa-solid fa-arrow-left fa-2x text-success mb-2"></i>
+                                    <h6>Estendi Inizio</h6>
+                                    <p class="small">Trascina il bordo sinistro per cambiare la data di inizio</p>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-4 mb-3">
+                            <div class="card h-100 border-info">
+                                <div class="card-body text-center">
+                                    <i class="fa-solid fa-arrow-right fa-2x text-info mb-2"></i>
+                                    <h6>Estendi Fine</h6>
+                                    <p class="small">Trascina il bordo destro per cambiare la data di fine</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <hr>
+                    
+                    <h5 class="mt-4"><i class="fa-solid fa-lightbulb text-warning"></i> Approvazione Intelligente</h5>
+                    <p>Il sistema ha una logica smart per le modifiche:</p>
+                    
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="alert alert-success">
+                                <h6><i class="fa-solid fa-check-circle"></i> RIDUZIONE = Pre-Approvata</h6>
+                                <p class="small mb-0">Se <strong>riduci</strong> il periodo (inizio dopo O fine prima), la modifica viene accettata automaticamente e l'altra famiglia riceve solo una notifica.</p>
+                                <p class="small mb-0 mt-2"><strong>Esempio:</strong> 25/12 - 30/12 → 27/12 - 29/12 ✅</p>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="alert alert-warning">
+                                <h6><i class="fa-solid fa-clock"></i> ESTENSIONE = Nuova Approvazione</h6>
+                                <p class="small mb-0">Se <strong>estendi</strong> il periodo (inizio prima O fine dopo), serve una nuova approvazione dall'altra famiglia.</p>
+                                <p class="small mb-0 mt-2"><strong>Esempio:</strong> 25/12 - 30/12 → 23/12 - 31/12 ⏳</p>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="alert alert-info mt-3">
+                        <i class="fa-solid fa-ban"></i> <strong>Nota:</strong> Puoi trascinare solo le <strong>tue</strong> prenotazioni. Gli eventi dell'altra famiglia appaiono sfumati e non sono trascinabili.
+                    </div>
+                </div>
+            </div>
+
+            <!-- Email -->
+            <div class="card mb-4">
+                <div class="card-header" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white;">
+                    <h3 class="mb-0"><i class="fa-solid fa-envelope"></i> Notifiche Email</h3>
+                </div>
+                <div class="card-body">
+                    <p>Riceverai un'email ogni volta che:</p>
+                    <ul>
+                        <li>✅ Una tua richiesta viene <strong>approvata</strong></li>
+                        <li>❌ Una tua richiesta viene <strong>rifiutata</strong> (con la motivazione)</li>
+                        <li>📝 L'altra famiglia fa una <strong>nuova richiesta</strong> che devi approvare</li>
+                        <li>🔄 Ti viene richiesta una <strong>deroga</strong> (modifica urgente)</li>
+                        <li>✏️ Una prenotazione viene <strong>modificata</strong> e richiede nuova approvazione</li>
+                    </ul>
+                    
+                    <div class="alert alert-success">
+                        <i class="fa-solid fa-link"></i> Ogni email contiene un <strong>link diretto</strong> alla dashboard per gestire rapidamente la richiesta!
+                    </div>
+                </div>
+            </div>
+
+            <!-- Chat -->
+            <div class="card mb-4">
+                <div class="card-header" style="background: linear-gradient(135deg, #00c6fb 0%, #005bea 100%); color: white;">
+                    <h3 class="mb-0"><i class="fa-solid fa-comments"></i> Chat Famiglia</h3>
+                </div>
+                <div class="card-body">
+                    <p class="lead">Comunica in tempo reale con l'altra famiglia direttamente dall'app!</p>
+                    
+                    <h5 class="mt-4">💬 Funzionalità:</h5>
+                    <div class="row">
+                        <div class="col-md-6">
+                            <ul>
+                                <li><strong>Messaggi in Tempo Reale</strong> - Invia e ricevi messaggi istantaneamente</li>
+                                <li><strong>Storico</strong> - Tutti i messaggi sono salvati e visibili ricollegandosi</li>
+                                <li><strong>Emoji</strong> - Clicca 😀 per inserire emoji</li>
+                            </ul>
+                        </div>
+                        <div class="col-md-6">
+                            <ul>
+                                <li><strong>"Sta scrivendo..."</strong> - Vedi quando l'altro utente sta digitando</li>
+                                <li><strong>Stato Online/Offline</strong> - Sai se l'altro è connesso</li>
+                                <li><strong>Mobile-Friendly</strong> - Perfetta per uso su smartphone</li>
+                            </ul>
+                        </div>
+                    </div>
+                    
+                    <div class="alert alert-info mt-3">
+                        <i class="fa-solid fa-lightbulb"></i> <strong>Suggerimento:</strong> Usa la chat per coordinarti rapidamente sulle prenotazioni invece di aspettare le email!
+                    </div>
+                </div>
+            </div>
+
+            <!-- Statistiche -->
+            <div class="card mb-4">
+                <div class="card-header" style="background: linear-gradient(135deg, #8E2DE2 0%, #4A00E0 100%); color: white;">
+                    <h3 class="mb-0"><i class="fa-solid fa-chart-pie"></i> Statistiche e Report</h3>
+                </div>
+                <div class="card-body">
+                    <p class="lead">PrenoPinzo tiene traccia di tutto! Consulta la pagina Statistiche per analizzare l'utilizzo della casa.</p>
+                    
+                    <div class="row">
+                         <div class="col-md-6 mb-3">
+                             <h5><i class="fa-solid fa-calculator"></i> Cosa puoi vedere:</h5>
+                             <ul>
+                                 <li><strong>Utilizzo Totale</strong> - Giorni totali occupati da ogni famiglia</li>
+                                 <li><strong>Confronto %</strong> - Grafico a torta della ripartizione tra famiglie</li>
+                                 <li><strong>Trend Mensile</strong> - Istogramma dei mesi più gettonati</li>
+                                 <li><strong>Storico Azioni</strong> - Quante volte hai approvato, rifiutato o chiesto deroghe</li>
+                             </ul>
+                         </div>
+                         <div class="col-md-6 mb-3">
+                             <div class="alert alert-info h-100">
+                                 <h5><i class="fa-solid fa-file-export"></i> Esporta Calendario (iCal)</h5>
+                                 <p>Puoi scaricare le prenotazioni in formato <code>.ics</code> e importarle nel tuo calendario personale (Google Calendar, Apple Calendar, Outlook).</p>
+                                 <a href="{% url 'statistics' %}" class="btn btn-sm btn-primary mt-2">
+                                    <i class="fa-solid fa-chart-line me-1"></i> Vai alle Statistiche
+                                 </a>
+                             </div>
+                         </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Tips -->
+            <div class="card mb-4 border-primary">
+                <div class="card-header bg-primary text-white">
+                    <h3 class="mb-0"><i class="fa-solid fa-star"></i> Consigli Utili</h3>
+                </div>
+                <div class="card-body">
+                    <ul class="list-unstyled">
+                        <li class="mb-3">
+                            <i class="fa-solid fa-check text-success"></i> <strong>Sii chiaro nei titoli:</strong> Usa titoli descrittivi come "Vacanze Pasquali" invece di "Periodo 1"
+                        </li>
+                        <li class="mb-3">
+                            <i class="fa-solid fa-check text-success"></i> <strong>Controlla il calendario:</strong> Prima di fare una richiesta, verifica che non ci siano sovrapposizioni
+                        </li>
+                        <li class="mb-3">
+                            <i class="fa-solid fa-check text-success"></i> <strong>Comunica sempre:</strong> Quando rifiuti una richiesta, spiega sempre il motivo nelle note
+                        </li>
+                        <li class="mb-3">
+                            <i class="fa-solid fa-check text-success"></i> <strong>Usa le deroghe con moderazione:</strong> Cerca di pianificare in anticipo per evitare conflitti
+                        </li>
+                        <li class="mb-3">
+                            <i class="fa-solid fa-check text-success"></i> <strong>Controlla lo Storico:</strong> Nella dashboard puoi vedere tutte le azioni passate
+                        </li>
+                    </ul>
+                </div>
+            </div>
+
+            <!-- Torna alla Dashboard -->
+            <div class="text-center mt-5">
+                <a href="{% url 'dashboard' %}" class="btn btn-primary btn-lg">
+                    <i class="fa-solid fa-arrow-left"></i> Torna alla Dashboard
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

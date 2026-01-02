@@ -1,0 +1,30 @@
+# Version control
+.git
+.gitignore
+
+# Python/Django
+venv/
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.Python
+env/
+.env
+
+# Database
+db.sqlite3
+data/
+
+# Static/Media
+staticfiles/
+media/
+
+# IDE settings
+.vscode/
+.idea/
+
+# OS generated
+Thumbs.db
+Desktop.ini
+.DS_Store
