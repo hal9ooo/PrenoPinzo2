@@ -347,6 +347,44 @@ def holiday_events(request):
     return JsonResponse(events, safe=False)
 
 
+def get_bridge_days_in_booking(start_date, end_date, it_holidays):
+    """
+    Identify bridge days (ponti) within a booking period.
+    A "ponte" is a holiday that falls on:
+    - Monday (ponte with preceding weekend)
+    - Tuesday (super-ponte if Monday is taken off)
+    - Thursday (ponte if Friday is taken off)  
+    - Friday (ponte with following weekend)
+    Returns a list of (holiday_date, holiday_name, bridge_type)
+    """
+    bridge_days = []
+    current = start_date
+    while current <= end_date:
+        if current in it_holidays:
+            weekday = current.weekday()  # 0=Monday, 6=Sunday
+            bridge_type = None
+            
+            if weekday == 0:  # Monday - ponte with weekend before
+                bridge_type = "Ponte Lunedì"
+            elif weekday == 1:  # Tuesday - super-ponte
+                bridge_type = "Super-Ponte Martedì"
+            elif weekday == 3:  # Thursday - ponte with potential Friday off
+                bridge_type = "Ponte Giovedì"
+            elif weekday == 4:  # Friday - ponte with weekend after
+                bridge_type = "Ponte Venerdì"
+            
+            if bridge_type:
+                bridge_days.append({
+                    'date': current,
+                    'name': it_holidays[current],
+                    'type': bridge_type
+                })
+        
+        current += timedelta(days=1)
+    
+    return bridge_days
+
+
 @login_required
 def statistics_view(request):
     """Comprehensive statistics page for bookings"""
@@ -359,14 +397,31 @@ def statistics_view(request):
     other_group = 'Fabrizio' if user_group == 'Andrea' else 'Andrea'
     current_year = date.today().year
     
+    # Get all years with bookings for bridge calculation
+    all_approved = Booking.objects.filter(status='APPROVED').exclude(status='CANCELLED')
+    years_with_bookings = set()
+    for b in all_approved:
+        years_with_bookings.add(b.start_date.year)
+        years_with_bookings.add(b.end_date.year)
+    years_with_bookings.add(current_year)
+    
+    # Load Italian holidays for all relevant years
+    it_holidays = holidays.Italy(years=list(years_with_bookings) if years_with_bookings else [current_year])
+    
     # ========== MY BOOKINGS STATS ==========
     my_bookings = Booking.objects.filter(family_group=user_group).exclude(status='CANCELLED')
     my_approved = my_bookings.filter(status='APPROVED')
     
-    # Calculate days per booking
+    # Calculate days per booking and bridge days
     my_total_days = 0
     my_max_period = 0
     my_periods_by_year = defaultdict(lambda: {'count': 0, 'days': 0})
+    
+    # Bridge (Ponte) statistics
+    my_total_bridges = 0
+    my_bridge_details = []  # List of all bridge days in my bookings
+    my_bridges_by_year = defaultdict(lambda: {'count': 0, 'bridges': []})
+    my_bridges_by_type = defaultdict(int)  # Count by bridge type
     
     for b in my_approved:
         days = (b.end_date - b.start_date).days + 1
@@ -375,6 +430,17 @@ def statistics_view(request):
         year = b.start_date.year
         my_periods_by_year[year]['count'] += 1
         my_periods_by_year[year]['days'] += days
+        
+        # Calculate bridges in this booking
+        bridges = get_bridge_days_in_booking(b.start_date, b.end_date, it_holidays)
+        my_total_bridges += len(bridges)
+        for bridge in bridges:
+            bridge['booking_title'] = b.title
+            my_bridge_details.append(bridge)
+            bridge_year = bridge['date'].year  # Use the bridge's actual year, not booking start year
+            my_bridges_by_year[bridge_year]['count'] += 1
+            my_bridges_by_year[bridge_year]['bridges'].append(bridge)
+            my_bridges_by_type[bridge['type']] += 1
     
     my_avg_period = my_total_days / my_approved.count() if my_approved.count() > 0 else 0
     
@@ -384,10 +450,35 @@ def statistics_view(request):
     
     other_total_days = 0
     other_max_period = 0
+    other_total_bridges = 0
+    other_bridge_details = []
+    other_bridges_by_year = defaultdict(lambda: {'count': 0, 'bridges': []})
+    other_bridges_by_type = defaultdict(int)
+    
     for b in other_approved:
         days = (b.end_date - b.start_date).days + 1
         other_total_days += days
         other_max_period = max(other_max_period, days)
+        
+        # Calculate bridges in this booking
+        bridges = get_bridge_days_in_booking(b.start_date, b.end_date, it_holidays)
+        other_total_bridges += len(bridges)
+        for bridge in bridges:
+            bridge['booking_title'] = b.title
+            other_bridge_details.append(bridge)
+            bridge_year = bridge['date'].year  # Use the bridge's actual year, not booking start year
+            other_bridges_by_year[bridge_year]['count'] += 1
+            other_bridges_by_year[bridge_year]['bridges'].append(bridge)
+            other_bridges_by_type[bridge['type']] += 1
+    
+    # ========== BRIDGE COMPARISON ==========
+    total_bridges = my_total_bridges + other_total_bridges
+    my_bridge_percentage = round((my_total_bridges / total_bridges * 100), 1) if total_bridges > 0 else 0
+    other_bridge_percentage = round(100 - my_bridge_percentage, 1) if total_bridges > 0 else 0
+    
+    # Current year bridges
+    my_current_year_bridges = my_bridges_by_year.get(current_year, {'count': 0})['count']
+    other_current_year_bridges = other_bridges_by_year.get(current_year, {'count': 0})['count']
     
     # ========== ACTION STATS FROM AUDIT ==========
     my_audits = BookingAudit.objects.filter(performed_by=user)
@@ -480,6 +571,18 @@ def statistics_view(request):
         
         # Yearly breakdown
         'my_periods_by_year': dict(sorted(my_periods_by_year.items(), reverse=True)),
+        
+        # Bridge (Ponte) statistics
+        'my_total_bridges': my_total_bridges,
+        'other_total_bridges': other_total_bridges,
+        'my_bridge_percentage': my_bridge_percentage,
+        'other_bridge_percentage': other_bridge_percentage,
+        'my_current_year_bridges': my_current_year_bridges,
+        'other_current_year_bridges': other_current_year_bridges,
+        'my_bridges_by_type': dict(my_bridges_by_type),
+        'other_bridges_by_type': dict(other_bridges_by_type),
+        'my_bridge_details': sorted(my_bridge_details, key=lambda x: x['date'], reverse=True)[:10],  # Last 10
+        'other_bridge_details': sorted(other_bridge_details, key=lambda x: x['date'], reverse=True)[:10],
     }
     
     return render(request, 'bookings/statistics.html', context)

@@ -5,17 +5,53 @@
 {% block extra_head %}
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <style>
-    .stat-card { border-left: 4px solid; }
-    .stat-card.blue { border-left-color: #0d6efd; }
-    .stat-card.green { border-left-color: #198754; }
-    .stat-card.orange { border-left-color: #fd7e14; }
-    .stat-card.purple { border-left-color: #6f42c1; }
-    .stat-card.red { border-left-color: #dc3545; }
-    .stat-card.teal { border-left-color: #20c997; }
-    .stat-number { font-size: 2.5rem; font-weight: bold; }
-    .stat-label { color: #6c757d; font-size: 0.9rem; }
-    .comparison-bar { height: 30px; border-radius: 15px; overflow: hidden; }
-    .progress-section { transition: width 0.5s ease; }
+    .stat-card {
+        border-left: 4px solid;
+    }
+
+    .stat-card.blue {
+        border-left-color: #0d6efd;
+    }
+
+    .stat-card.green {
+        border-left-color: #198754;
+    }
+
+    .stat-card.orange {
+        border-left-color: #fd7e14;
+    }
+
+    .stat-card.purple {
+        border-left-color: #6f42c1;
+    }
+
+    .stat-card.red {
+        border-left-color: #dc3545;
+    }
+
+    .stat-card.teal {
+        border-left-color: #20c997;
+    }
+
+    .stat-number {
+        font-size: 2.5rem;
+        font-weight: bold;
+    }
+
+    .stat-label {
+        color: #6c757d;
+        font-size: 0.9rem;
+    }
+
+    .comparison-bar {
+        height: 30px;
+        border-radius: 15px;
+        overflow: hidden;
+    }
+
+    .progress-section {
+        transition: width 0.5s ease;
+    }
 </style>
 {% endblock %}
 
@@ -90,12 +126,12 @@
             <div class="col-md-8">
                 <p class="mb-2"><strong>Distribuzione giorni tra le famiglie:</strong></p>
                 <div class="comparison-bar d-flex">
-                    <div class="progress-section bg-success d-flex align-items-center justify-content-center text-white" 
-                         style="width: {{ my_percentage }}%;">
+                    <div class="progress-section bg-success d-flex align-items-center justify-content-center text-white"
+                        style="width: {{ my_percentage }}%;">
                         {% if my_percentage > 10 %}{{ user_group }}: {{ my_percentage }}%{% endif %}
                     </div>
-                    <div class="progress-section bg-primary d-flex align-items-center justify-content-center text-white" 
-                         style="width: {{ other_percentage }}%;">
+                    <div class="progress-section bg-primary d-flex align-items-center justify-content-center text-white"
+                        style="width: {{ other_percentage }}%;">
                         {% if other_percentage > 10 %}{{ other_group }}: {{ other_percentage }}%{% endif %}
                     </div>
                 </div>
@@ -115,6 +151,183 @@
         </div>
     </div>
 </div>
+
+<!-- Bridge (Ponte) Statistics -->
+<h5 class="mb-3"><i class="fa-solid fa-bridge me-2"></i>Statistiche Ponti</h5>
+<div class="row mb-4">
+    <div class="col-md-3">
+        <div class="card stat-card green h-100">
+            <div class="card-body text-center">
+                <div class="stat-number text-success">{{ my_total_bridges }}</div>
+                <div class="stat-label">Ponti Totali ({{ user_group }})</div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card stat-card blue h-100">
+            <div class="card-body text-center">
+                <div class="stat-number text-primary">{{ other_total_bridges }}</div>
+                <div class="stat-label">Ponti Totali ({{ other_group }})</div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card stat-card green h-100">
+            <div class="card-body text-center">
+                <div class="stat-number text-success">{{ my_current_year_bridges }}</div>
+                <div class="stat-label">Ponti {{ current_year }} ({{ user_group }})</div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card stat-card blue h-100">
+            <div class="card-body text-center">
+                <div class="stat-number text-primary">{{ other_current_year_bridges }}</div>
+                <div class="stat-label">Ponti {{ current_year }} ({{ other_group }})</div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Bridge Balance Bar -->
+<div class="card mb-4">
+    <div class="card-header">
+        <i class="fa-solid fa-scale-balanced me-2"></i>Bilanciamento Ponti
+    </div>
+    <div class="card-body">
+        <div class="row align-items-center">
+            <div class="col-md-8">
+                <p class="mb-2"><strong>Distribuzione ponti tra le famiglie:</strong></p>
+                {% if my_total_bridges > 0 or other_total_bridges > 0 %}
+                <div class="comparison-bar d-flex">
+                    <div class="progress-section bg-success d-flex align-items-center justify-content-center text-white"
+                        style="width: {{ my_bridge_percentage }}%;">
+                        {% if my_bridge_percentage > 10 %}{{ user_group }}: {{ my_bridge_percentage }}%{% endif %}
+                    </div>
+                    <div class="progress-section bg-primary d-flex align-items-center justify-content-center text-white"
+                        style="width: {{ other_bridge_percentage }}%;">
+                        {% if other_bridge_percentage > 10 %}{{ other_group }}: {{ other_bridge_percentage }}%{% endif %}
+                    </div>
+                </div>
+                {% else %}
+                <div class="text-muted">Nessun ponte trovato nelle prenotazioni</div>
+                {% endif %}
+            </div>
+            <div class="col-md-4 text-center">
+                <div class="row">
+                    <div class="col-6">
+                        <span class="badge bg-success fs-6">{{ my_total_bridges }} ponti</span><br>
+                        <small>{{ my_bridge_percentage }}%</small>
+                    </div>
+                    <div class="col-6">
+                        <span class="badge bg-primary fs-6">{{ other_total_bridges }} ponti</span><br>
+                        <small>{{ other_bridge_percentage }}%</small>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Bridge Details -->
+<div class="row mb-4">
+    <div class="col-md-6">
+        <div class="card h-100">
+            <div class="card-header">
+                <i class="fa-solid fa-chart-pie me-2"></i>Ponti per Tipo ({{ user_group }})
+            </div>
+            <div class="card-body">
+                {% if my_bridges_by_type %}
+                <canvas id="myBridgeTypeChart" height="200"></canvas>
+                {% else %}
+                <p class="text-muted text-center">Nessun ponte registrato</p>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+    <div class="col-md-6">
+        <div class="card h-100">
+            <div class="card-header">
+                <i class="fa-solid fa-chart-pie me-2"></i>Ponti per Tipo ({{ other_group }})
+            </div>
+            <div class="card-body">
+                {% if other_bridges_by_type %}
+                <canvas id="otherBridgeTypeChart" height="200"></canvas>
+                {% else %}
+                <p class="text-muted text-center">Nessun ponte registrato</p>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Bridge Details Tables -->
+{% if my_bridge_details or other_bridge_details %}
+<div class="row mb-4">
+    <div class="col-md-6">
+        <div class="card h-100">
+            <div class="card-header bg-success text-white">
+                <i class="fa-solid fa-list me-2"></i>Ultimi Ponti ({{ user_group }})
+            </div>
+            <div class="card-body p-0" style="max-height: 300px; overflow-y: auto;">
+                {% if my_bridge_details %}
+                <table class="table table-sm table-hover mb-0">
+                    <thead class="table-light sticky-top">
+                        <tr>
+                            <th>Data</th>
+                            <th>Festività</th>
+                            <th>Tipo</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for bridge in my_bridge_details %}
+                        <tr>
+                            <td><small>{{ bridge.date|date:"d/m/Y" }}</small></td>
+                            <td><small>{{ bridge.name }}</small></td>
+                            <td><span class="badge bg-success">{{ bridge.type }}</span></td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+                {% else %}
+                <p class="text-muted text-center py-3">Nessun ponte</p>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+    <div class="col-md-6">
+        <div class="card h-100">
+            <div class="card-header bg-primary text-white">
+                <i class="fa-solid fa-list me-2"></i>Ultimi Ponti ({{ other_group }})
+            </div>
+            <div class="card-body p-0" style="max-height: 300px; overflow-y: auto;">
+                {% if other_bridge_details %}
+                <table class="table table-sm table-hover mb-0">
+                    <thead class="table-light sticky-top">
+                        <tr>
+                            <th>Data</th>
+                            <th>Festività</th>
+                            <th>Tipo</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for bridge in other_bridge_details %}
+                        <tr>
+                            <td><small>{{ bridge.date|date:"d/m/Y" }}</small></td>
+                            <td><small>{{ bridge.name }}</small></td>
+                            <td><span class="badge bg-primary">{{ bridge.type }}</span></td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+                {% else %}
+                <p class="text-muted text-center py-3">Nessun ponte</p>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endif %}
 
 <!-- Actions Stats -->
 <h5 class="mb-3"><i class="fa-solid fa-list-check me-2"></i>Le Tue Azioni</h5>
@@ -219,7 +432,11 @@
             <div class="card-body" style="max-height: 250px; overflow-y: auto;">
                 <table class="table table-sm">
                     <thead>
-                        <tr><th>Anno</th><th>Periodi</th><th>Giorni</th></tr>
+                        <tr>
+                            <th>Anno</th>
+                            <th>Periodi</th>
+                            <th>Giorni</th>
+                        </tr>
                     </thead>
                     <tbody>
                         {% for year, data in my_periods_by_year.items %}
@@ -229,7 +446,9 @@
                             <td><span class="badge bg-success">{{ data.days }}</span></td>
                         </tr>
                         {% empty %}
-                        <tr><td colspan="3" class="text-muted">Nessun dato</td></tr>
+                        <tr>
+                            <td colspan="3" class="text-muted">Nessun dato</td>
+                        </tr>
                         {% endfor %}
                     </tbody>
                 </table>
@@ -271,31 +490,104 @@
 
 {% block extra_scripts %}
 <script>
+    // Monthly Chart
     const ctx = document.getElementById('monthlyChart').getContext('2d');
     new Chart(ctx, {
         type: 'bar',
         data: {
-            labels: {{ month_names|safe }},
+            labels: {{ month_names| safe }},
+        datasets: [{
+            label: 'Giorni prenotati',
+            data: {{ monthly_data| safe }},
+        backgroundColor: 'rgba(25, 135, 84, 0.7)',
+        borderColor: 'rgba(25, 135, 84, 1)',
+        borderWidth: 1
+            }]
+        },
+        options: {
+        responsive: true,
+        plugins: {
+            legend: { display: false }
+        },
+        scales: {
+            y: {
+                beginAtZero: true,
+                ticks: { stepSize: 1 }
+            }
+        }
+    }
+    });
+
+    // Bridge Type Charts - Colors for different bridge types
+    const bridgeColors = {
+        'Ponte Lunedì': 'rgba(40, 167, 69, 0.8)',      // Green
+        'Super-Ponte Martedì': 'rgba(23, 162, 184, 0.8)', // Cyan
+        'Ponte Giovedì': 'rgba(255, 193, 7, 0.8)',    // Yellow
+        'Ponte Venerdì': 'rgba(220, 53, 69, 0.8)'     // Red
+    };
+
+    {% if my_bridges_by_type %}
+    // My Bridge Type Chart
+    const myBridgeData = {{ my_bridges_by_type| safe }};
+    const myLabels = Object.keys(myBridgeData);
+    const myValues = Object.values(myBridgeData);
+    const myColors = myLabels.map(label => bridgeColors[label] || 'rgba(108, 117, 125, 0.8)');
+
+    const myBridgeCtx = document.getElementById('myBridgeTypeChart').getContext('2d');
+    new Chart(myBridgeCtx, {
+        type: 'doughnut',
+        data: {
+            labels: myLabels,
             datasets: [{
-                label: 'Giorni prenotati',
-                data: {{ monthly_data|safe }},
-                backgroundColor: 'rgba(25, 135, 84, 0.7)',
-                borderColor: 'rgba(25, 135, 84, 1)',
-                borderWidth: 1
+                data: myValues,
+                backgroundColor: myColors,
+                borderWidth: 2,
+                borderColor: '#fff'
             }]
         },
         options: {
             responsive: true,
+            maintainAspectRatio: true,
             plugins: {
-                legend: { display: false }
-            },
-            scales: {
-                y: {
-                    beginAtZero: true,
-                    ticks: { stepSize: 1 }
+                legend: {
+                    position: 'bottom',
+                    labels: { font: { size: 11 } }
                 }
             }
         }
     });
+    {% endif %}
+
+    {% if other_bridges_by_type %}
+    // Other Family Bridge Type Chart
+    const otherBridgeData = {{ other_bridges_by_type| safe }};
+    const otherLabels = Object.keys(otherBridgeData);
+    const otherValues = Object.values(otherBridgeData);
+    const otherColors = otherLabels.map(label => bridgeColors[label] || 'rgba(108, 117, 125, 0.8)');
+
+    const otherBridgeCtx = document.getElementById('otherBridgeTypeChart').getContext('2d');
+    new Chart(otherBridgeCtx, {
+        type: 'doughnut',
+        data: {
+            labels: otherLabels,
+            datasets: [{
+                data: otherValues,
+                backgroundColor: otherColors,
+                borderWidth: 2,
+                borderColor: '#fff'
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: true,
+            plugins: {
+                legend: {
+                    position: 'bottom',
+                    labels: { font: { size: 11 } }
+                }
+            }
+        }
+    });
+    {% endif %}
 </script>
 {% endblock %}
