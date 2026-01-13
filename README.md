@@ -33,6 +33,7 @@ flowchart LR
 Cos'è una Deroga? Una **richiesta di modifica** su una prenotazione già approvata dell'altra famiglia.
 
 **Esempio pratico:**
+
 > Famiglia Andrea ha prenotato 10-20 Agosto (approvata).
 > Famiglia Fabrizio scopre di aver bisogno proprio di quelle date.
 > → Fabrizio può cliccare "Richiedi Modifica" e proporre nuove date.
@@ -42,72 +43,95 @@ Cos'è una Deroga? Una **richiesta di modifica** su una prenotazione già approv
 
 Puoi trascinare le tue prenotazioni direttamente nel calendario. Il sistema applica una logica smart:
 
-| Tipo di Modifica | Cosa Succede |
-|------------------|--------------|
+| Tipo di Modifica                          | Cosa Succede                                             |
+| ----------------------------------------- | -------------------------------------------------------- |
 | **Riduci il periodo** (es. 10-20 → 12-18) | ✅ Auto-approvato, l'altra famiglia riceve solo notifica |
-| **Estendi il periodo** (es. 10-20 → 8-22) | ⏳ Richiede nuova approvazione |
+| **Estendi il periodo** (es. 10-20 → 8-22) | ⏳ Richiede nuova approvazione                           |
 
 Questa logica evita che tu debba aspettare approvazione per modifiche che "non disturbano" l'altra famiglia.
+
+### 🔐 Periodi di Pertinenza (Ownership Periods)
+
+Ogni famiglia può definire dei **periodi di pertinenza esclusiva** (es. "Settimana Bianca", "Estate").
+Le prenotazioni create _interamente_ all'interno dei propri periodi vengono **auto-approvate** ✅ immediatamente.
+
+![Gestione Periodi di Pertinenza](docs/images/ownership_periods.png)
+
+> **Nota:** L'altra famiglia non può creare prenotazioni nei tuoi periodi di pertinenza (ma può sempre chiedere una _Deroga_).
 
 ---
 
 ## ✨ Funzionalità
 
 ### 📅 Calendario Interattivo
-- **Vista mensile/settimanale** con colori per famiglia (Verde = Andrea, Blu = Fabrizio)
-- **Drag & Drop** per spostare o ridimensionare le tue prenotazioni
-- **Click rapido** su data per creare nuova prenotazione
-- **Festività italiane** evidenziate automaticamente
+
+-   **Vista mensile/settimanale** con colori per famiglia (Verde = Andrea, Blu = Fabrizio)
+-   **Drag & Drop** per spostare o ridimensionare le tue prenotazioni
+-   **Click rapido** su data per creare nuova prenotazione
+-   **Festività italiane** evidenziate automaticamente
+
+![Calendario con Periodi di Pertinenza](docs/images/calendar.png)
 
 ### 📋 Dashboard
+
 La dashboard è il centro di controllo, divisa in sezioni:
 
-| Sezione | Colore | Descrizione |
-|---------|--------|-------------|
-| **Richieste di Deroga** | 🔴 Rosso | Richieste URGENTI di modifica sulle tue prenotazioni |
-| **Richiedono Attenzione** | 🟠 Arancione | Richieste dell'altra famiglia da approvare/rifiutare |
-| **Le Tue Richieste** | 🔵 Blu | Le tue prenotazioni in attesa o da correggere |
-| **Prenotazioni Approvate** | 🟢 Verde | Tutte le prenotazioni confermate |
+![Dashboard PrenoPinzo](docs/images/dashboard.png)
+
+| Sezione                    | Colore       | Descrizione                                          |
+| -------------------------- | ------------ | ---------------------------------------------------- |
+| **Richieste di Deroga**    | 🔴 Rosso     | Richieste URGENTI di modifica sulle tue prenotazioni |
+| **Richiedono Attenzione**  | 🟠 Arancione | Richieste dell'altra famiglia da approvare/rifiutare |
+| **Le Tue Richieste**       | 🔵 Blu       | Le tue prenotazioni in attesa o da correggere        |
+| **Prenotazioni Approvate** | 🟢 Verde     | Tutte le prenotazioni confermate                     |
+| **Periodi di Pertinenza**  | 🏔️ Info      | Riepilogo dei periodi auto-approvati (±3 mesi)       |
 
 ### 💬 Chat Real-Time
-- **Messaggi istantanei** via WebSocket
-- **Emoji picker** integrato 😀
-- **Indicatore "sta scrivendo..."**
-- **Stato online/offline**
-- **Storico persistente** di tutti i messaggi
+
+-   **Messaggi istantanei** via WebSocket
+-   **Emoji picker** integrato 😀
+-   **Indicatore "sta scrivendo..."**
+-   **Stato online/offline**
+-   **Storico persistente** di tutti i messaggi
 
 ### 📧 Notifiche Email
+
 Ricevi email automatiche per:
-- ✅ Prenotazione approvata
-- ❌ Prenotazione rifiutata (con motivazione)
-- 📝 Nuova richiesta da approvare
-- 🔄 Richiesta di deroga
-- ✏️ Modifica che richiede riapprovazione
+
+-   ✅ Prenotazione approvata
+-   ❌ Prenotazione rifiutata (con motivazione)
+-   📝 Nuova richiesta da approvare
+-   🔄 Richiesta di deroga
+-   ✏️ Modifica che richiede riapprovazione
 
 **Promemoria automatici:**
-- Ogni 6 ore: controllo messaggi chat non letti
-- Ogni Lunedì alle 08:00: riepilogo prenotazioni in attesa
+
+-   Ogni 6 ore: controllo messaggi chat non letti
+-   Ogni Lunedì alle 08:00: riepilogo prenotazioni in attesa
 
 ### 📊 Statistiche e Report
-- **Utilizzo totale** per famiglia (giorni occupati)
-- **Grafico a torta** della ripartizione percentuale
-- **Trend mensile** dei mesi più utilizzati
-- **Export iCal** per sincronizzare con Google Calendar, Apple Calendar, Outlook
+
+-   **Utilizzo totale** per famiglia (giorni occupati)
+-   **Grafico a torta** della ripartizione percentuale
+-   **Trend mensile** dei mesi più utilizzati
+-   **Export iCal** per sincronizzare con Google Calendar, Apple Calendar, Outlook
 
 ### 📱 PWA Mobile-First
-- **Installabile** su iOS e Android
-- **Layout responsive** ottimizzato per smartphone
-- **Touch-friendly** con FAB e bottom sheet
-- **Calendario compatto** per schermi piccoli
+
+-   **Installabile** su iOS e Android
+-   **Layout responsive** ottimizzato per smartphone
+-   **Touch-friendly** con FAB e bottom sheet
+-   **Calendario compatto** per schermi piccoli
 
 ---
 
 ## 🚀 Quick Start
 
 ### Prerequisiti
-- Python 3.12+
-- Docker & Docker Compose (per produzione)
-- Git
+
+-   Python 3.12+
+-   Docker & Docker Compose (per produzione)
+-   Git
 
 ### Sviluppo Locale
 
@@ -154,17 +178,17 @@ curl http://localhost/health/
 
 ### Variabili d'Ambiente
 
-| Variabile | Descrizione | Default |
-|-----------|-------------|---------|
-| `SECRET_KEY` | Django secret key | **(obbligatorio)** |
-| `DEBUG` | Modalità debug | `False` |
-| `ALLOWED_HOSTS` | Host permessi (comma-separated) | `localhost` |
-| `DATABASE_PATH` | Path al database SQLite | `/app/data/db.sqlite3` |
-| `SENDGRID_API_KEY` | API key SendGrid per email | - |
-| `FROM_EMAIL` | Email mittente | `noreply@prenopinzo.local` |
-| `APP_BASE_URL` | URL base dell'app | `http://localhost` |
-| `EMAIL_ANDREA` | Email famiglia Andrea | `andrea@example.com` |
-| `EMAIL_FABRIZIO` | Email famiglia Fabrizio | `fabrizio@example.com` |
+| Variabile          | Descrizione                     | Default                    |
+| ------------------ | ------------------------------- | -------------------------- |
+| `SECRET_KEY`       | Django secret key               | **(obbligatorio)**         |
+| `DEBUG`            | Modalità debug                  | `False`                    |
+| `ALLOWED_HOSTS`    | Host permessi (comma-separated) | `localhost`                |
+| `DATABASE_PATH`    | Path al database SQLite         | `/app/data/db.sqlite3`     |
+| `SENDGRID_API_KEY` | API key SendGrid per email      | -                          |
+| `FROM_EMAIL`       | Email mittente                  | `noreply@prenopinzo.local` |
+| `APP_BASE_URL`     | URL base dell'app               | `http://localhost`         |
+| `EMAIL_ANDREA`     | Email famiglia Andrea           | `andrea@example.com`       |
+| `EMAIL_FABRIZIO`   | Email famiglia Fabrizio         | `fabrizio@example.com`     |
 
 ### Esempio .env
 
@@ -225,7 +249,7 @@ PrenoPinzo2/
 │           └── help.html
 ├── PrenoPinzo/                  # Configurazione Django
 │   ├── settings.py              # Settings sviluppo
-│   ├── settings_prod.py         # Settings produzione  
+│   ├── settings_prod.py         # Settings produzione
 │   └── asgi.py                  # ASGI per WebSocket
 ├── docker-compose.yml
 ├── Dockerfile
@@ -238,15 +262,15 @@ PrenoPinzo2/
 
 ## 🔧 Stack Tecnologico
 
-| Componente | Tecnologia |
-|------------|------------|
-| **Backend** | Django 6.0, Python 3.12 |
-| **WebSocket** | Django Channels + Daphne |
-| **Frontend** | Bootstrap 5, FullCalendar, SweetAlert2, Emoji Picker |
-| **Database** | SQLite (PostgreSQL-ready) |
-| **Container** | Docker, Docker Compose |
-| **Email** | SendGrid SMTP |
-| **Festività** | `holidays` Python library |
+| Componente    | Tecnologia                                           |
+| ------------- | ---------------------------------------------------- |
+| **Backend**   | Django 6.0, Python 3.12                              |
+| **WebSocket** | Django Channels + Daphne                             |
+| **Frontend**  | Bootstrap 5, FullCalendar, SweetAlert2, Emoji Picker |
+| **Database**  | SQLite (PostgreSQL-ready)                            |
+| **Container** | Docker, Docker Compose                               |
+| **Email**     | SendGrid SMTP                                        |
+| **Festività** | `holidays` Python library                            |
 
 ---
 
@@ -254,10 +278,10 @@ PrenoPinzo2/
 
 L'app è una Progressive Web App installabile:
 
-| Piattaforma | Come Installare |
-|-------------|-----------------|
-| **iOS Safari** | Condividi → Aggiungi a Home |
-| **Android Chrome** | Menu ⋮ → Installa App |
+| Piattaforma        | Come Installare                     |
+| ------------------ | ----------------------------------- |
+| **iOS Safari**     | Condividi → Aggiungi a Home         |
+| **Android Chrome** | Menu ⋮ → Installa App               |
 | **Desktop Chrome** | Icona installazione nella barra URL |
 
 ---
