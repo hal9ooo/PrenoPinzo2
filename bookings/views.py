@@ -59,6 +59,23 @@ def dashboard(request):
     # 6. All Audit Logs (Modal)
     all_audit_history = BookingAudit.objects.select_related('booking', 'performed_by').order_by('-timestamp')
 
+    # 7. Ownership Periods (±3 months for card, all for modal)
+    from .models import OwnershipPeriod
+    from dateutil.relativedelta import relativedelta
+    
+    today = date.today()
+    period_start_cutoff = today - relativedelta(months=3)
+    period_end_cutoff = today + relativedelta(months=3)
+    
+    # Recent periods (within ±3 months)
+    recent_ownership_periods = OwnershipPeriod.objects.filter(
+        end_date__gte=period_start_cutoff,
+        start_date__lte=period_end_cutoff
+    ).order_by('start_date')
+    
+    # All periods for modal
+    all_ownership_periods = OwnershipPeriod.objects.all().order_by('start_date')
+
     context = {
         'deroga_requests': deroga_requests,
         'approved_bookings': approved_bookings,
@@ -68,6 +85,8 @@ def dashboard(request):
         'user_group': user_group,
         'audit_history': audit_history,
         'all_audit_history': all_audit_history,
+        'recent_ownership_periods': recent_ownership_periods,
+        'all_ownership_periods': all_ownership_periods,
     }
     return render(request, 'bookings/dashboard.html', context)
 
@@ -133,23 +152,34 @@ def booking_events(request):
 @login_required
 @require_POST
 def create_booking(request):
+    from .models import OwnershipPeriod
+    
     form = BookingForm(request.POST)
     if form.is_valid():
         booking = form.save(commit=False)
         booking.user = request.user
         booking.family_group = request.user.profile.family_group
-        # Pending with OTHER group
-        booking.pending_with = booking.get_other_group()
+        
         # Check constraints (Server side overlap check)
         # Smart overlap check allowing touching dates
         if Booking.check_overlap(booking.start_date, booking.end_date):
              return JsonResponse({'status': 'error', 'message': 'Date sovrapposte a una prenotazione approvata!'}, status=400)
 
-        booking.save()
-        booking.log_action('CREATED', request.user)
-        # Send email notification to the other family
-        send_booking_notification(booking, 'created')
-        return JsonResponse({'status': 'ok'})
+        # Check if booking is within an ownership period (auto-approve)
+        if OwnershipPeriod.is_within_ownership(booking.family_group, booking.start_date, booking.end_date):
+            booking.status = 'APPROVED'
+            booking.pending_with = None
+            booking.save()
+            booking.log_action('AUTO_APPROVED', request.user, details='Periodo di pertinenza')
+            return JsonResponse({'status': 'ok', 'message': 'Prenotazione auto-approvata (periodo di pertinenza).'})
+        else:
+            # Standard negotiation flow
+            booking.pending_with = booking.get_other_group()
+            booking.save()
+            booking.log_action('CREATED', request.user)
+            # Send email notification to the other family
+            send_booking_notification(booking, 'created')
+            return JsonResponse({'status': 'ok'})
     else:
         return JsonResponse({'status': 'error', 'errors': form.errors}, status=400)
 
@@ -862,3 +892,105 @@ def profile_view(request):
     })
 
 
+# ============================================================
+# Ownership Periods (Periodi di Pertinenza)
+# ============================================================
+from .models import OwnershipPeriod
+
+@login_required
+def ownership_periods_view(request):
+    """Page to manage ownership periods"""
+    user_group = request.user.profile.family_group
+    
+    # My periods
+    my_periods = OwnershipPeriod.objects.filter(family_group=user_group)
+    # Other family's periods  
+    other_group = 'Fabrizio' if user_group == 'Andrea' else 'Andrea'
+    other_periods = OwnershipPeriod.objects.filter(family_group=other_group)
+    
+    return render(request, 'bookings/ownership_periods.html', {
+        'my_periods': my_periods,
+        'other_periods': other_periods,
+        'user_group': user_group,
+        'other_group': other_group,
+    })
+
+
+@login_required
+def ownership_periods_api(request):
+    """API endpoint returning ownership periods as calendar background events"""
+    periods = OwnershipPeriod.objects.all()
+    events = []
+    
+    for p in periods:
+        # Pastel colors for background
+        if p.family_group == 'Andrea':
+            color = '#c8e6c9'  # Green pastel
+        else:
+            color = '#bbdefb'  # Blue pastel
+        
+        events.append({
+            'id': f'ownership-{p.id}',
+            'title': p.note or f'Pertinenza {p.family_group}',
+            'start': p.start_date.isoformat(),
+            'end': (p.end_date + timedelta(days=1)).isoformat(),  # FullCalendar end is exclusive
+            'display': 'background',
+            'color': color,
+            'extendedProps': {
+                'is_ownership_period': True,
+                'family_group': p.family_group,
+                'period_id': p.id,
+            }
+        })
+    
+    return JsonResponse(events, safe=False)
+
+
+@login_required
+@require_POST
+def create_ownership_period(request):
+    """Create a new ownership period"""
+    from datetime import datetime
+    
+    user_group = request.user.profile.family_group
+    
+    start_str = request.POST.get('start_date')
+    end_str = request.POST.get('end_date')
+    note = request.POST.get('note', '')
+    
+    try:
+        start_date = datetime.strptime(start_str, '%Y-%m-%d').date()
+        end_date = datetime.strptime(end_str, '%Y-%m-%d').date()
+    except (ValueError, TypeError):
+        return JsonResponse({'status': 'error', 'message': 'Formato date non valido'}, status=400)
+    
+    if start_date >= end_date:
+        return JsonResponse({'status': 'error', 'message': 'La data di fine deve essere successiva alla data di inizio'}, status=400)
+    
+    # Check overlap with other family's periods
+    if OwnershipPeriod.check_overlap_with_other_family(user_group, start_date, end_date):
+        return JsonResponse({'status': 'error', 'message': 'Sovrapposizione con un periodo di pertinenza dell\'altra famiglia!'}, status=400)
+    
+    period = OwnershipPeriod.objects.create(
+        family_group=user_group,
+        start_date=start_date,
+        end_date=end_date,
+        note=note,
+        created_by=request.user
+    )
+    
+    return JsonResponse({'status': 'ok', 'id': period.id})
+
+
+@login_required
+@require_POST
+def delete_ownership_period(request, period_id):
+    """Delete an ownership period"""
+    period = get_object_or_404(OwnershipPeriod, id=period_id)
+    
+    # Only owner's family can delete
+    if period.family_group != request.user.profile.family_group:
+        return HttpResponseForbidden("Non puoi eliminare i periodi dell'altra famiglia.")
+    
+    period.delete()
+    return JsonResponse({'status': 'ok'})

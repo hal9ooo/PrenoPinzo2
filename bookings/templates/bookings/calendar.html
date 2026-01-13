@@ -26,8 +26,8 @@
         <form id="mobile-booking-form">
             <div class="mb-3">
                 <label class="form-label">Titolo</label>
-                <input type="text" id="mobile-title" class="form-control form-control-lg" 
-                       placeholder="Es. Vacanze Estive" required>
+                <input type="text" id="mobile-title" class="form-control form-control-lg"
+                    placeholder="Es. Vacanze Estive" required>
             </div>
             <div class="row">
                 <div class="col-6">
@@ -71,11 +71,13 @@
         z-index: 1000;
         transition: transform 0.2s, box-shadow 0.2s;
     }
-    .fab-button:hover, .fab-button:active {
+
+    .fab-button:hover,
+    .fab-button:active {
         transform: scale(1.1);
         box-shadow: 0 6px 16px rgba(13, 110, 253, 0.5);
     }
-    
+
     /* Bottom Sheet */
     .bottom-sheet {
         position: fixed;
@@ -90,6 +92,7 @@
         max-height: 80vh;
         overflow-y: auto;
     }
+
     @media (min-width: 768px) {
         .bottom-sheet {
             left: 50%;
@@ -97,12 +100,14 @@
             width: 500px;
             transform: translateX(-50%);
             border-radius: 20px 20px 0 0;
-            box-shadow: 0 -5px 20px rgba(0,0,0,0.15);
+            box-shadow: 0 -5px 20px rgba(0, 0, 0, 0.15);
         }
     }
+
     .bottom-sheet.active {
         bottom: 0;
     }
+
     .bottom-sheet-header {
         display: flex;
         justify-content: space-between;
@@ -111,16 +116,18 @@
         padding-bottom: 15px;
         border-bottom: 1px solid #eee;
     }
+
     .bottom-sheet-overlay {
         position: fixed;
         top: 0;
         left: 0;
         right: 0;
         bottom: 0;
-        background: rgba(0,0,0,0.5);
+        background: rgba(0, 0, 0, 0.5);
         z-index: 1040;
         display: none;
     }
+
     .bottom-sheet-overlay.active {
         display: block;
     }
@@ -129,12 +136,12 @@
 
 {% block extra_scripts %}
 <script>
-    document.addEventListener('DOMContentLoaded', function() {
+    document.addEventListener('DOMContentLoaded', function () {
         var calendarEl = document.getElementById('calendar');
         // Detect mobile
         var isMobile = window.innerWidth < 768;
         var userGroup = '{{ user.profile.family_group }}';
-        
+
         var calendar = new FullCalendar.Calendar(calendarEl, {
             locale: 'it',
             firstDay: 1, // Monday
@@ -148,6 +155,11 @@
                 // Italian holidays (background events)
                 {
                     url: '{% url "holiday_events" %}',
+                    display: 'background'
+                },
+                // Ownership periods (background events with pastel colors)
+                {
+                    url: '{% url "ownership_periods_api" %}',
                     display: 'background'
                 }
             ],
@@ -166,46 +178,46 @@
                 month: 'Mese',
                 list: 'Lista'
             },
-            
+
             // Auto height to prevent scroll
             height: 'auto',
-            
+
             // Enable drag & drop only on desktop (touch doesn't work well)
             editable: !isMobile,
             eventResizableFromStart: !isMobile,
             eventDurationEditable: !isMobile,
-            
+
             // Event callbacks
             eventDrop: handleEventChange,
             eventResize: handleEventChange,
-            
+
             // Make only user's own events draggable
-            eventDidMount: function(info) {
+            eventDidMount: function (info) {
                 const eventFamily = info.event.extendedProps.family_group;
                 const eventStatus = info.event.extendedProps.status;
-                
+
                 // Only editable if owned by user and not in DEROGA
                 if (eventFamily !== userGroup || eventStatus === 'DEROGA') {
                     info.el.style.cursor = 'not-allowed';
                     info.el.style.opacity = '0.7';
                 }
             },
-            
+
             // Prevent invalid drops
-            eventAllow: function(dropInfo, draggedEvent) {
+            eventAllow: function (dropInfo, draggedEvent) {
                 const eventFamily = draggedEvent.extendedProps.family_group;
                 const eventStatus = draggedEvent.extendedProps.status;
-                
+
                 // Block if not owned or in DEROGA status
                 if (eventFamily !== userGroup || eventStatus === 'DEROGA') {
                     return false;
                 }
-                
+
                 return true; // Server will validate overlaps
             },
-            
+
             selectable: true,
-            select: function(info) {
+            select: function (info) {
                 // Open new booking modal
                 Swal.fire({
                     title: 'Nuova Prenotazione',
@@ -225,34 +237,34 @@
                     }
                 }).then((result) => {
                     if (result.isConfirmed) {
-                         const data = result.value;
-                         if(!data.title) {
-                             Swal.fire('Errore', 'Inserisci un titolo', 'warning');
-                             return;
-                         }
-                         
-                         fetch('{% url "create_booking" %}', {
-                             method: 'POST',
-                             headers: {
-                                 'X-CSRFToken': '{{ csrf_token }}',
-                                 'Content-Type': 'application/x-www-form-urlencoded'
-                             },
-                             body: `title=${encodeURIComponent(data.title)}&start_date=${data.start}&end_date=${data.end}`
-                         })
-                         .then(r => r.json())
-                         .then(resp => {
-                             if(resp.status === 'ok') {
-                                 calendar.refetchEvents();
-                                 Swal.fire('Creata!', 'La richiesta è stata inviata.', 'success');
-                             } else {
-                                 Swal.fire('Errore', resp.message || JSON.stringify(resp.errors), 'error');
-                             }
-                         });
+                        const data = result.value;
+                        if (!data.title) {
+                            Swal.fire('Errore', 'Inserisci un titolo', 'warning');
+                            return;
+                        }
+
+                        fetch('{% url "create_booking" %}', {
+                            method: 'POST',
+                            headers: {
+                                'X-CSRFToken': '{{ csrf_token }}',
+                                'Content-Type': 'application/x-www-form-urlencoded'
+                            },
+                            body: `title=${encodeURIComponent(data.title)}&start_date=${data.start}&end_date=${data.end}`
+                        })
+                            .then(r => r.json())
+                            .then(resp => {
+                                if (resp.status === 'ok') {
+                                    calendar.refetchEvents();
+                                    Swal.fire('Creata!', 'La richiesta è stata inviata.', 'success');
+                                } else {
+                                    Swal.fire('Errore', resp.message || JSON.stringify(resp.errors), 'error');
+                                }
+                            });
                     }
                 });
             }
         });
-        
+
         // Helper function to format date as YYYY-MM-DD without timezone issues
         function formatDateLocal(date) {
             const year = date.getFullYear();
@@ -260,11 +272,11 @@
             const day = String(date.getDate()).padStart(2, '0');
             return `${year}-${month}-${day}`;
         }
-        
+
         function handleEventChange(info) {
             const event = info.event;
             const newStart = formatDateLocal(event.start);
-            
+
             // FullCalendar end is EXCLUSIVE (day after last day)
             // We need INCLUSIVE end date for our database
             let newEnd;
@@ -275,7 +287,7 @@
             } else {
                 newEnd = newStart;
             }
-            
+
             // Confirm with user
             Swal.fire({
                 title: 'Conferma Modifica',
@@ -295,75 +307,75 @@
                         },
                         body: `start_date=${newStart}&end_date=${newEnd}`
                     })
-                    .then(r => r.json())
-                    .then(data => {
-                        if (data.status === 'ok') {
-                            Swal.fire({
-                                title: 'Aggiornata!',
-                                text: data.message,
-                                icon: 'success'
-                            }).then(() => {
-                                calendar.refetchEvents();
-                            });
-                        } else {
-                            Swal.fire('Errore', data.message, 'error');
-                            info.revert(); // Revert the change
-                        }
-                    })
-                    .catch(() => {
-                        Swal.fire('Errore', 'Errore di connessione', 'error');
-                        info.revert();
-                    });
+                        .then(r => r.json())
+                        .then(data => {
+                            if (data.status === 'ok') {
+                                Swal.fire({
+                                    title: 'Aggiornata!',
+                                    text: data.message,
+                                    icon: 'success'
+                                }).then(() => {
+                                    calendar.refetchEvents();
+                                });
+                            } else {
+                                Swal.fire('Errore', data.message, 'error');
+                                info.revert(); // Revert the change
+                            }
+                        })
+                        .catch(() => {
+                            Swal.fire('Errore', 'Errore di connessione', 'error');
+                            info.revert();
+                        });
                 } else {
                     info.revert(); // Revert if user cancels
                 }
             });
         }
-        
+
         calendar.render();
     });
-    
+
     // Mobile booking form functions
     function openMobileBookingForm() {
         // Set default dates to today and tomorrow
         const today = new Date();
         const tomorrow = new Date(today);
         tomorrow.setDate(tomorrow.getDate() + 7);
-        
+
         document.getElementById('mobile-start').value = today.toISOString().split('T')[0];
         document.getElementById('mobile-end').value = tomorrow.toISOString().split('T')[0];
         document.getElementById('mobile-title').value = '';
-        
+
         document.getElementById('mobile-booking-sheet').classList.add('active');
         document.getElementById('bottom-sheet-overlay').classList.add('active');
         document.getElementById('mobile-title').focus();
     }
-    
+
     function closeMobileBookingForm() {
         document.getElementById('mobile-booking-sheet').classList.remove('active');
         document.getElementById('bottom-sheet-overlay').classList.remove('active');
     }
-    
+
     // Handle mobile form submit
-    document.getElementById('mobile-booking-form').addEventListener('submit', function(e) {
+    document.getElementById('mobile-booking-form').addEventListener('submit', function (e) {
         e.preventDefault();
-        
+
         const title = document.getElementById('mobile-title').value;
         const startDate = document.getElementById('mobile-start').value;
         const endDate = document.getElementById('mobile-end').value;
-        
+
         if (!title || !startDate || !endDate) {
             Swal.fire('Errore', 'Compila tutti i campi', 'warning');
             return;
         }
-        
+
         // Show loading
         Swal.fire({
             title: 'Invio...',
             allowOutsideClick: false,
             didOpen: () => Swal.showLoading()
         });
-        
+
         fetch('{% url "create_booking" %}', {
             method: 'POST',
             headers: {
@@ -372,26 +384,26 @@
             },
             body: `title=${encodeURIComponent(title)}&start_date=${startDate}&end_date=${endDate}`
         })
-        .then(r => r.json())
-        .then(data => {
-            if (data.status === 'ok') {
-                closeMobileBookingForm();
-                Swal.fire({
-                    icon: 'success',
-                    title: 'Richiesta Inviata!',
-                    text: 'La prenotazione è in attesa di approvazione.',
-                    timer: 2000,
-                    showConfirmButton: false
-                });
-                // Refresh calendar
-                location.reload();
-            } else {
-                Swal.fire('Errore', data.message || JSON.stringify(data.errors), 'error');
-            }
-        })
-        .catch(() => {
-            Swal.fire('Errore', 'Errore di connessione', 'error');
-        });
+            .then(r => r.json())
+            .then(data => {
+                if (data.status === 'ok') {
+                    closeMobileBookingForm();
+                    Swal.fire({
+                        icon: 'success',
+                        title: 'Richiesta Inviata!',
+                        text: 'La prenotazione è in attesa di approvazione.',
+                        timer: 2000,
+                        showConfirmButton: false
+                    });
+                    // Refresh calendar
+                    location.reload();
+                } else {
+                    Swal.fire('Errore', data.message || JSON.stringify(data.errors), 'error');
+                }
+            })
+            .catch(() => {
+                Swal.fire('Errore', 'Errore di connessione', 'error');
+            });
     });
 </script>
 {% endblock %}

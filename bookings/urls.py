@@ -28,6 +28,12 @@ urlpatterns = [
     path('api/thermostat/schedule-options/', views.get_schedule_options, name='schedule_options'),
     path('api/thermostat/set-schedule/', views.set_schedule, name='set_schedule'),
     
+    # Ownership Periods (Periodi di Pertinenza)
+    path('ownership-periods/', views.ownership_periods_view, name='ownership_periods'),
+    path('api/ownership-periods/', views.ownership_periods_api, name='ownership_periods_api'),
+    path('ownership-periods/create/', views.create_ownership_period, name='create_ownership_period'),
+    path('ownership-periods/delete/<int:period_id>/', views.delete_ownership_period, name='delete_ownership_period'),
+    
     # Password Change
     path('password_change/', auth_views.PasswordChangeView.as_view(template_name='registration/password_change_form.html'), name='password_change'),
     path('password_change/done/', auth_views.PasswordChangeDoneView.as_view(template_name='registration/password_change_done.html'), name='password_change_done'),

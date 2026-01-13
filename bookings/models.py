@@ -164,6 +164,55 @@ class BookingAudit(models.Model):
         return f"{self.action} on {self.booking} by {self.performed_by}"
 
 
+class OwnershipPeriod(models.Model):
+    """Periodi di pertinenza: prenotazioni in questi range sono auto-approvate"""
+    FAMILY_CHOICES = [
+        ('Andrea', 'Famiglia Andrea'),
+        ('Fabrizio', 'Famiglia Fabrizio'),
+    ]
+    
+    family_group = models.CharField(max_length=20, choices=FAMILY_CHOICES)
+    start_date = models.DateField()
+    end_date = models.DateField()
+    created_by = models.ForeignKey(User, on_delete=models.CASCADE, related_name='ownership_periods')
+    created_at = models.DateTimeField(auto_now_add=True)
+    note = models.CharField(max_length=200, blank=True, help_text="Es. Estate 2026")
+
+    class Meta:
+        ordering = ['start_date']
+
+    def __str__(self):
+        return f"{self.family_group}: {self.start_date} - {self.end_date}"
+
+    def get_family_group_display(self):
+        return dict(self.FAMILY_CHOICES).get(self.family_group, self.family_group)
+
+    @classmethod
+    def check_overlap_with_other_family(cls, family_group, start_date, end_date, exclude_id=None):
+        """
+        Check if overlaps with OTHER family's periods.
+        Same-day touching is allowed (start_date < end_date, not <=).
+        """
+        other_family = 'Fabrizio' if family_group == 'Andrea' else 'Andrea'
+        query = cls.objects.filter(
+            family_group=other_family,
+            start_date__lt=end_date,
+            end_date__gt=start_date
+        )
+        if exclude_id:
+            query = query.exclude(id=exclude_id)
+        return query.exists()
+    
+    @classmethod
+    def is_within_ownership(cls, family_group, start_date, end_date):
+        """Check if a booking period is FULLY within an ownership period of the same family"""
+        return cls.objects.filter(
+            family_group=family_group,
+            start_date__lte=start_date,
+            end_date__gte=end_date
+        ).exists()
+
+
 class ChatMessage(models.Model):
     """Real-time chat messages between family groups"""
     sender = models.ForeignKey(User, on_delete=models.CASCADE, related_name='sent_messages')

@@ -1,0 +1,184 @@
+{% extends 'base.html' %}
+
+{% block title %}Periodi di Pertinenza{% endblock %}
+
+{% block content %}
+<h2 class="mb-4"><i class="fa-solid fa-calendar-check me-2"></i>Periodi di Pertinenza</h2>
+
+<div class="row">
+    <!-- My Periods -->
+    <div class="col-md-6">
+        <div class="card border-success">
+            <div class="card-header bg-success text-white d-flex justify-content-between align-items-center">
+                <h5 class="mb-0"><i class="fa-solid fa-user me-2"></i>I Tuoi Periodi ({{ user_group }})</h5>
+                <button class="btn btn-light btn-sm" onclick="showCreatePeriodModal()">
+                    <i class="fa-solid fa-plus"></i> Nuovo
+                </button>
+            </div>
+            <div class="card-body">
+                <p class="text-muted small mb-3">
+                    <i class="fa-solid fa-info-circle"></i> Le prenotazioni create in questi periodi vengono
+                    <strong>auto-approvate</strong> senza negoziazione.
+                </p>
+                <div class="list-group">
+                    {% for period in my_periods %}
+                    <div class="list-group-item d-flex justify-content-between align-items-center">
+                        <div>
+                            <strong>{{ period.start_date|date:"d M Y" }} - {{ period.end_date|date:"d M Y" }}</strong>
+                            {% if period.note %}
+                            <br><small class="text-muted">{{ period.note }}</small>
+                            {% endif %}
+                        </div>
+                        <button class="btn btn-outline-danger btn-sm" onclick="deletePeriod({{ period.id }})">
+                            <i class="fa-solid fa-trash"></i>
+                        </button>
+                    </div>
+                    {% empty %}
+                    <div class="list-group-item text-center text-muted">
+                        <i class="fa-solid fa-calendar-xmark fa-2x mb-2"></i>
+                        <p class="mb-0">Nessun periodo definito</p>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Other Family's Periods -->
+    <div class="col-md-6">
+        <div class="card border-info">
+            <div class="card-header bg-info text-white">
+                <h5 class="mb-0"><i class="fa-solid fa-users me-2"></i>Periodi di {{ other_group }}</h5>
+            </div>
+            <div class="card-body">
+                <p class="text-muted small mb-3">
+                    <i class="fa-solid fa-info-circle"></i> Questi periodi sono riservati all'altra famiglia. Non puoi
+                    creare periodi di pertinenza sovrapposti.
+                </p>
+                <div class="list-group">
+                    {% for period in other_periods %}
+                    <div class="list-group-item">
+                        <strong>{{ period.start_date|date:"d M Y" }} - {{ period.end_date|date:"d M Y" }}</strong>
+                        {% if period.note %}
+                        <br><small class="text-muted">{{ period.note }}</small>
+                        {% endif %}
+                    </div>
+                    {% empty %}
+                    <div class="list-group-item text-center text-muted">
+                        <i class="fa-solid fa-calendar-xmark fa-2x mb-2"></i>
+                        <p class="mb-0">Nessun periodo definito</p>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="card mt-4">
+    <div class="card-body">
+        <h6><i class="fa-solid fa-lightbulb text-warning"></i> Come funziona</h6>
+        <ul class="mb-0">
+            <li>Ogni famiglia può definire periodi di <strong>pertinenza esclusiva</strong>.</li>
+            <li>Le prenotazioni create <strong>interamente dentro</strong> il tuo periodo di pertinenza vengono
+                <strong>auto-approvate</strong>.</li>
+            <li>I periodi delle due famiglie <strong>non possono sovrapporsi</strong> (tranne lo stesso giorno di
+                confine).</li>
+            <li>La richiesta di <strong>Deroga</strong> rimane sempre disponibile per l'altra famiglia.</li>
+        </ul>
+    </div>
+</div>
+
+{% endblock %}
+
+{% block extra_scripts %}
+<script>
+    function showCreatePeriodModal() {
+        Swal.fire({
+            title: 'Nuovo Periodo di Pertinenza',
+            html:
+                '<div class="text-start">' +
+                '<div class="mb-3">' +
+                '<label class="form-label fw-bold">Data inizio</label>' +
+                '<input id="period-start" class="form-control form-control-lg" type="date">' +
+                '</div>' +
+                '<div class="mb-3">' +
+                '<label class="form-label fw-bold">Data fine</label>' +
+                '<input id="period-end" class="form-control form-control-lg" type="date">' +
+                '</div>' +
+                '<div class="mb-2">' +
+                '<label class="form-label fw-bold">Note (opzionale)</label>' +
+                '<input id="period-note" class="form-control" type="text" placeholder="Es. Estate 2026">' +
+                '</div>' +
+                '</div>',
+            focusConfirm: false,
+            showCancelButton: true,
+            confirmButtonText: '<i class="fa-solid fa-check me-1"></i> Crea',
+            cancelButtonText: 'Annulla',
+            customClass: {
+                confirmButton: 'btn btn-success btn-lg me-2',
+                cancelButton: 'btn btn-secondary btn-lg'
+            },
+            preConfirm: () => {
+                return [
+                    document.getElementById('period-start').value,
+                    document.getElementById('period-end').value,
+                    document.getElementById('period-note').value
+                ]
+            }
+        }).then((result) => {
+            if (result.isConfirmed) {
+                const [start, end, note] = result.value;
+                if (!start || !end) {
+                    Swal.fire('Errore', 'Le date sono obbligatorie', 'error');
+                    return;
+                }
+
+                fetch('{% url "create_ownership_period" %}', {
+                    method: 'POST',
+                    headers: {
+                        'X-CSRFToken': '{{ csrf_token }}',
+                        'Content-Type': 'application/x-www-form-urlencoded'
+                    },
+                    body: `start_date=${start}&end_date=${end}&note=${encodeURIComponent(note)}`
+                })
+                    .then(r => r.json())
+                    .then(data => {
+                        if (data.status === 'ok') {
+                            Swal.fire('Creato!', 'Periodo di pertinenza creato.', 'success').then(() => location.reload());
+                        } else {
+                            Swal.fire('Errore', data.message, 'error');
+                        }
+                    });
+            }
+        });
+    }
+
+    function deletePeriod(id) {
+        Swal.fire({
+            title: 'Conferma Eliminazione',
+            text: 'Vuoi eliminare questo periodo di pertinenza?',
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonColor: '#d33',
+            confirmButtonText: 'Sì, elimina',
+            cancelButtonText: 'Annulla'
+        }).then((result) => {
+            if (result.isConfirmed) {
+                fetch(`/ownership-periods/delete/${id}/`, {
+                    method: 'POST',
+                    headers: { 'X-CSRFToken': '{{ csrf_token }}' }
+                })
+                    .then(r => r.json())
+                    .then(data => {
+                        if (data.status === 'ok') {
+                            Swal.fire('Eliminato!', '', 'success').then(() => location.reload());
+                        } else {
+                            Swal.fire('Errore', data.message || 'Errore sconosciuto', 'error');
+                        }
+                    });
+            }
+        });
+    }
+</script>
+{% endblock %}

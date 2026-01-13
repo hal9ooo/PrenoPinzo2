@@ -1,0 +1,2 @@
+# Ignore Django templates - they have special syntax that breaks with HTML formatters
+**/templates/**/*.html
