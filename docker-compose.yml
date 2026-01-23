@@ -11,6 +11,7 @@ services:
       - prenopinzo_data:/app/data # Named volume for SQLite
       - prenopinzo_static:/app/staticfiles # Named volume for static files
       - prenopinzo_media:/app/media # Named volume for uploaded media
+      - ./backups:/app/backups # Host bind mount for DB backups
     ports:
       - "8080:8000" # External port 8080 -> container port 8000
     networks:

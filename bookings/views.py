@@ -424,11 +424,27 @@ def statistics_view(request):
     
     user = request.user
     user_group = user.profile.family_group
-    other_group = 'Fabrizio' if user_group == 'Andrea' else 'Andrea'
+    family_groups = [choice[0] for choice in Booking.FAMILY_CHOICES]
+    other_group = next((group for group in family_groups if group != user_group), None)
     current_year = date.today().year
+    year_start = date(current_year, 1, 1)
+    year_end = date(current_year, 12, 31)
+
+    def iter_date_range(start, end):
+        current = start
+        while current <= end:
+            yield current
+            current += timedelta(days=1)
+
+    def overlap_days(start, end, range_start, range_end):
+        overlap_start = max(start, range_start)
+        overlap_end = min(end, range_end)
+        if overlap_start > overlap_end:
+            return 0
+        return (overlap_end - overlap_start).days + 1
     
     # Get all years with bookings for bridge calculation
-    all_approved = Booking.objects.filter(status='APPROVED').exclude(status='CANCELLED')
+    all_approved = Booking.objects.filter(status='APPROVED')
     years_with_bookings = set()
     for b in all_approved:
         years_with_bookings.add(b.start_date.year)
@@ -457,9 +473,15 @@ def statistics_view(request):
         days = (b.end_date - b.start_date).days + 1
         my_total_days += days
         my_max_period = max(my_max_period, days)
-        year = b.start_date.year
-        my_periods_by_year[year]['count'] += 1
-        my_periods_by_year[year]['days'] += days
+        booking_start_year = b.start_date.year
+        booking_end_year = b.end_date.year
+        for year in range(booking_start_year, booking_end_year + 1):
+            year_range_start = date(year, 1, 1)
+            year_range_end = date(year, 12, 31)
+            year_days = overlap_days(b.start_date, b.end_date, year_range_start, year_range_end)
+            if year_days > 0:
+                my_periods_by_year[year]['count'] += 1
+                my_periods_by_year[year]['days'] += year_days
         
         # Calculate bridges in this booking
         bridges = get_bridge_days_in_booking(b.start_date, b.end_date, it_holidays)
@@ -526,11 +548,11 @@ def statistics_view(request):
     deroga_rejected = my_audits.filter(action='DEROGA_REJECTED').count()
     
     # ========== CURRENT YEAR STATS ==========
-    my_current_year = my_approved.filter(start_date__year=current_year)
-    my_current_year_days = sum((b.end_date - b.start_date).days + 1 for b in my_current_year)
+    my_current_year = my_approved.filter(end_date__gte=year_start, start_date__lte=year_end)
+    my_current_year_days = sum(overlap_days(b.start_date, b.end_date, year_start, year_end) for b in my_current_year)
     
-    other_current_year = other_approved.filter(start_date__year=current_year)
-    other_current_year_days = sum((b.end_date - b.start_date).days + 1 for b in other_current_year)
+    other_current_year = other_approved.filter(end_date__gte=year_start, start_date__lte=year_end)
+    other_current_year_days = sum(overlap_days(b.start_date, b.end_date, year_start, year_end) for b in other_current_year)
     
     # ========== UPCOMING BOOKINGS ==========
     today = date.today()
@@ -541,17 +563,20 @@ def statistics_view(request):
     # ========== MONTHLY DISTRIBUTION ==========
     monthly_distribution = defaultdict(int)
     for b in my_approved:
-        month = b.start_date.month
-        days = (b.end_date - b.start_date).days + 1
-        monthly_distribution[month] += days
+        for day in iter_date_range(b.start_date, b.end_date):
+            monthly_distribution[day.month] += 1
     
     month_names = ['Gen', 'Feb', 'Mar', 'Apr', 'Mag', 'Giu', 'Lug', 'Ago', 'Set', 'Ott', 'Nov', 'Dic']
     monthly_data = [monthly_distribution.get(i, 0) for i in range(1, 13)]
     
     # ========== COMPARISON ==========
     total_all_days = my_total_days + other_total_days
-    my_percentage = round((my_total_days / total_all_days * 100), 1) if total_all_days > 0 else 0
-    other_percentage = round(100 - my_percentage, 1)
+    if total_all_days > 0:
+        my_percentage = round((my_total_days / total_all_days * 100), 1)
+        other_percentage = round(100 - my_percentage, 1)
+    else:
+        my_percentage = 0
+        other_percentage = 0
     
     context = {
         'user_group': user_group,
@@ -599,8 +624,8 @@ def statistics_view(request):
         'month_names': month_names,
         'monthly_data': monthly_data,
         
-        # Yearly breakdown
-        'my_periods_by_year': dict(sorted(my_periods_by_year.items(), reverse=True)),
+    # Yearly breakdown
+    'my_periods_by_year': dict(sorted(my_periods_by_year.items(), reverse=True)),
         
         # Bridge (Ponte) statistics
         'my_total_bridges': my_total_bridges,
@@ -905,14 +930,75 @@ def ownership_periods_view(request):
     # My periods
     my_periods = OwnershipPeriod.objects.filter(family_group=user_group)
     # Other family's periods  
-    other_group = 'Fabrizio' if user_group == 'Andrea' else 'Andrea'
+    family_groups = [choice[0] for choice in OwnershipPeriod.FAMILY_CHOICES]
+    other_group = next((group for group in family_groups if group != user_group), None)
     other_periods = OwnershipPeriod.objects.filter(family_group=other_group)
+
+    # Timeline data for the current year (split in two halves)
+    timeline_year = date.today().year
+    all_periods = list(my_periods) + list(other_periods)
+
+    def period_to_segment_in_range(period, range_start, range_end):
+        range_days = (range_end - range_start).days + 1
+        overlap_start = max(period.start_date, range_start)
+        overlap_end = min(period.end_date, range_end)
+        if overlap_start > overlap_end:
+            return None
+        left = (overlap_start - range_start).days / range_days * 100
+        width = ((overlap_end - overlap_start).days + 1) / range_days * 100
+        return {
+            'left': f"{left:.3f}",
+            'width': f"{width:.3f}",
+            'start': overlap_start,
+            'end': overlap_end,
+            'label': period.note or f"{period.start_date:%d %b} - {period.end_date:%d %b}",
+            'family_group': period.family_group,
+        }
+
+    timeline_halves = [
+        {
+            'label': 'Gen–Giu',
+            'start': date(timeline_year, 1, 1),
+            'end': date(timeline_year, 6, 30),
+            'months': list(range(1, 7)),
+        },
+        {
+            'label': 'Lug–Dic',
+            'start': date(timeline_year, 7, 1),
+            'end': date(timeline_year, 12, 31),
+            'months': list(range(7, 13)),
+        },
+    ]
+
+    for half in timeline_halves:
+        range_start = half['start']
+        range_end = half['end']
+        range_days = (range_end - range_start).days + 1
+        segments = []
+        for p in all_periods:
+            seg = period_to_segment_in_range(p, range_start, range_end)
+            if seg:
+                segments.append(seg)
+        segments.sort(key=lambda x: float(x['left']))
+        half['segments'] = segments
+
+        months = []
+        for month in half['months']:
+            month_start = date(timeline_year, month, 1)
+            left = (month_start - range_start).days / range_days * 100
+            months.append({
+                'label': month_start.strftime('%b'),
+                'left': f"{left:.3f}",
+            })
+        half['months'] = months
     
     return render(request, 'bookings/ownership_periods.html', {
         'my_periods': my_periods,
         'other_periods': other_periods,
         'user_group': user_group,
         'other_group': other_group,
+        'timeline_year': timeline_year,
+        'timeline_halves': timeline_halves,
     })
 
 

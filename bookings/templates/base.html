@@ -5,177 +5,34 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="theme-color" content="#0d6efd">
+    <meta name="theme-color" content="#2b6cff">
     <meta name="description" content="PrenoPinzo - Gestione prenotazioni casa vacanza">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="default">
     <meta name="apple-mobile-web-app-title" content="PrenoPinzo">
+    <meta name="mobile-web-app-capable" content="yes">
     <title>PrenoPinzo {% block title %}{% endblock %}</title>
+    <link rel="icon" type="image/svg+xml" href="{% static 'bookings/favicon.svg' %}">
     <link rel="icon" type="image/png" href="{% static 'bookings/favicon.png' %}">
-    <link rel="apple-touch-icon" href="{% static 'bookings/icon-192.png' %}">
+    <link rel="apple-touch-icon" sizes="180x180" href="{% static 'bookings/icon-180.png' %}">
+    <link rel="apple-touch-icon" sizes="167x167" href="{% static 'bookings/icon-167.png' %}">
+    <link rel="apple-touch-icon" sizes="152x152" href="{% static 'bookings/icon-152.png' %}">
+    <link rel="apple-touch-icon" sizes="192x192" href="{% static 'bookings/icon-192.png' %}">
     <link rel="manifest" href="{% static 'bookings/manifest.json' %}">
     <!-- Bootstrap 5 -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700&display=swap"
+        rel="stylesheet">
+    <!-- App styles -->
+    <link rel="stylesheet" href="{% static 'bookings/app.css' %}">
     <!-- FontAwesome -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
     <!-- FullCalendar -->
     <script src='https://cdn.jsdelivr.net/npm/fullcalendar@6.1.10/index.global.min.js'></script>
 
-    <style>
-        body {
-            background-color: #f8f9fa;
-        }
-
-        .card {
-            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-            border: none;
-            margin-bottom: 20px;
-        }
-
-        .navbar-brand {
-            font-weight: bold;
-            color: #0d6efd !important;
-        }
-
-        /* Remove underlines from calendar */
-        .fc a {
-            text-decoration: none !important;
-        }
-
-        .fc-col-header-cell-cushion,
-        .fc-daygrid-day-number {
-            text-decoration: none !important;
-            color: inherit;
-        }
-
-        /* Mobile optimizations */
-        @media (max-width: 768px) {
-
-            /* Audit log scroll on mobile */
-            .audit-log-body {
-                max-height: 300px !important;
-                overflow-y: auto !important;
-            }
-
-            /* Smaller tables on mobile */
-            .table-responsive {
-                font-size: 0.85rem;
-            }
-
-            /* Calendar smaller fonts and compact layout */
-            .fc {
-                font-size: 0.7rem !important;
-            }
-
-            .fc .fc-toolbar {
-                flex-wrap: nowrap !important;
-                gap: 0.25rem !important;
-            }
-
-            .fc .fc-toolbar-chunk {
-                display: flex !important;
-                flex-wrap: nowrap !important;
-            }
-
-            .fc .fc-toolbar-title {
-                font-size: 0.9rem !important;
-            }
-
-            .fc .fc-button {
-                padding: 0.2rem 0.35rem !important;
-                font-size: 0.7rem !important;
-            }
-
-            .fc .fc-daygrid-day-number {
-                font-size: 0.75rem !important;
-                padding: 1px 3px !important;
-            }
-
-            /* Show event titles on mobile with small font */
-            .fc .fc-event-title {
-                font-size: 0.6rem !important;
-                white-space: nowrap;
-                overflow: hidden;
-                text-overflow: ellipsis;
-            }
-
-            .fc .fc-daygrid-event {
-                padding: 1px 2px !important;
-            }
-
-            /* Remove card scroll */
-            .card-body {
-                overflow-x: hidden !important;
-            }
-
-            /* Dashboard cards stack full width */
-            .col-md-4 {
-                margin-bottom: 1rem;
-            }
-
-            /* Navbar compact */
-            .navbar-text {
-                font-size: 0.85rem;
-            }
-
-            /* Hide holiday text on mobile - keep only background color */
-            .fc .fc-bg-event .fc-event-title {
-                display: none !important;
-            }
-
-            /* Hide secondary info in booking rows */
-            .hide-mobile {
-                display: none !important;
-            }
-
-            /* Compact mobile tables */
-            table {
-                font-size: 0.85rem !important;
-            }
-
-            table th,
-            table td {
-                padding: 0.5rem 0.4rem !important;
-                vertical-align: middle !important;
-            }
-
-            /* Stack title and dates in same cell on mobile */
-            .mobile-booking-info {
-                display: block !important;
-            }
-
-            .mobile-date {
-                font-size: 0.75rem;
-                color: #555;
-            }
-
-            /* Compact buttons */
-            table .btn {
-                padding: 0.2rem 0.4rem !important;
-                font-size: 0.7rem !important;
-            }
-
-            table .btn i {
-                margin: 0 !important;
-            }
-
-            /* Hide button text on mobile, show only icons */
-            table .btn .btn-text {
-                display: none;
-            }
-        }
-
-        /* Small phone adjustments */
-        @media (max-width: 480px) {
-            .fc .fc-toolbar-title {
-                font-size: 0.85rem !important;
-            }
-
-            h2 {
-                font-size: 1.3rem;
-            }
-        }
-    </style>
     {% block extra_head %}{% endblock %}
 </head>
 
@@ -186,8 +43,7 @@
                 PrenoPinzo</a>
             <div class="d-flex align-items-center d-lg-none">
                 <a id="mobile-chat-badge" href="{% url 'chat' %}"
-                    class="badge bg-danger rounded-pill me-2 text-decoration-none"
-                    style="display: none; font-size: 1rem; padding: 0.5em 0.7em;">
+                    class="badge bg-danger rounded-pill me-2 text-decoration-none app-chat-badge">
                     <i class="fa-solid fa-comment"></i> <span id="mobile-unread-count">0</span>
                 </a>
                 <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
@@ -220,8 +76,7 @@
                     <li class="nav-item">
                         <a class="nav-link" href="{% url 'chat' %}">
                             <i class="fa-solid fa-comments"></i> Chat
-                            <span id="desktop-chat-badge" class="badge bg-info rounded-pill ms-1"
-                                style="display: none;">0</span>
+                            <span id="desktop-chat-badge" class="badge bg-info rounded-pill ms-1 app-chat-badge">0</span>
                         </a>
                     </li>
                     <li class="nav-item">
@@ -234,12 +89,10 @@
                     {% if user.is_authenticated %}
                     <span class="navbar-text me-3 d-flex align-items-center">
                         {% if user.profile.avatar %}
-                        <img src="{{ user.profile.avatar.url }}" alt="Ava" class="rounded-circle me-2"
-                            style="width: 32px; height: 32px; object-fit: cover; border: 1px solid #dee2e6;">
+                        <img src="{{ user.profile.avatar.url }}" alt="Ava" class="rounded-circle me-2 app-avatar">
                         {% else %}
                         <span
-                            class="rounded-circle bg-secondary text-white d-flex align-items-center justify-content-center me-2"
-                            style="width: 32px; height: 32px; font-size: 0.8rem;">
+                            class="rounded-circle bg-secondary text-white d-flex align-items-center justify-content-center me-2 app-avatar-fallback">
                             {{ user.username|make_list|first|upper }}
                         </span>
                         {% endif %}
@@ -250,7 +103,7 @@
                                 title="Configurazione Profilo">
                                 <i class="fa-solid fa-gear"></i>
                             </a>
-                            <small class="text-muted d-block" style="font-size: 0.75rem; line-height: 1;">{{ user.profile.get_family_group_display }}</small>
+                            <small class="text-muted d-block app-user-family">{{ user.profile.get_family_group_display }}</small>
                         </span>
                     </span>
                     <form action="{% url 'logout' %}" method="post">
@@ -284,9 +137,74 @@
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 
     <script>
+        function getCookie(name) {
+            const value = `; ${document.cookie}`;
+            const parts = value.split(`; ${name}=`);
+            if (parts.length === 2) return parts.pop().split(';').shift();
+            return '';
+        }
+
+        const csrfSafeMethods = ['GET', 'HEAD', 'OPTIONS', 'TRACE'];
+        const originalFetch = window.fetch.bind(window);
+        let csrfAlertShown = false;
+
+        window.fetch = (input, init = {}) => {
+            const url = typeof input === 'string' ? input : input?.url || '';
+            const method = (init.method || input?.method || 'GET').toUpperCase();
+            const isSameOrigin = url.startsWith('/') || url.startsWith(window.location.origin);
+
+            if (isSameOrigin && !csrfSafeMethods.includes(method)) {
+                const headers = new Headers(init.headers || {});
+                if (!headers.has('X-CSRFToken')) {
+                    headers.set('X-CSRFToken', getCookie('csrftoken'));
+                }
+                init.headers = headers;
+            }
+
+            return originalFetch(input, init).then(async (response) => {
+                if (!response.ok && response.status === 403 && !csrfAlertShown && !csrfSafeMethods.includes(method)) {
+                    try {
+                        const cloned = response.clone();
+                        const text = await cloned.text();
+                        if (text.toLowerCase().includes('csrf')) {
+                            csrfAlertShown = true;
+                            if (window.Swal) {
+                                Swal.fire({
+                                    icon: 'warning',
+                                    title: 'Sessione scaduta',
+                                    text: 'Per motivi di sicurezza la sessione è scaduta. Ricarica la pagina e riprova.',
+                                    confirmButtonText: 'Ricarica',
+                                    showCancelButton: true,
+                                    cancelButtonText: 'Chiudi'
+                                }).then((result) => {
+                                    if (result.isConfirmed) {
+                                        window.location.reload();
+                                    } else {
+                                        csrfAlertShown = false;
+                                    }
+                                });
+                            } else {
+                                alert('Sessione scaduta. Ricarica la pagina e riprova.');
+                                window.location.reload();
+                            }
+                        }
+                    } catch (_) {
+                        // ignore
+                    }
+                }
+                return response;
+            });
+        };
+
         document.body.addEventListener('htmx:configRequest', (event) => {
-            event.detail.headers['X-CSRFToken'] = '{{ csrf_token }}';
+            event.detail.headers['X-CSRFToken'] = getCookie('csrftoken');
         });
+
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', () => {
+                navigator.serviceWorker.register('/sw.js').catch(() => {});
+            });
+        }
 
         // Check for unread chat messages
         function checkUnreadChat() {

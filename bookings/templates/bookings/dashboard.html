@@ -3,12 +3,12 @@
 {% block title %}Dashboard{% endblock %}
 
 {% block content %}
-<h2 class="mb-4">Dashboard</h2>
+<h2 class="mb-4 app-page-title">Dashboard</h2>
 
 <!-- 1. Deroga Requests -->
 {% if deroga_requests %}
 <div class="card border-danger mb-4">
-    <div class="card-header bg-danger text-white">
+    <div class="card-header app-card-header app-card-header--danger">
         <h5 class="mb-0">Richieste di Deroga (Urgenti)</h5>
     </div>
     <div class="card-body">
@@ -36,7 +36,7 @@
 
 <!-- 2. Approved Bookings List -->
 <div class="card mb-4">
-    <div class="card-header bg-success text-white d-flex justify-content-between align-items-center">
+    <div class="card-header app-card-header app-card-header--success d-flex justify-content-between align-items-center">
         <h5 class="mb-0">Prenotazioni Approvate</h5>
         <button type="button" class="btn btn-sm btn-link text-white p-0" data-bs-toggle="modal"
             data-bs-target="#historyModal" title="Vedi tutto lo storico">
@@ -60,11 +60,10 @@
                         <strong>{{ booking.title }}</strong>
                         <span class="d-md-none mobile-booking-info">
                             <br><small class="text-muted">{{ booking.family_group }}</small>
-                            <br><small class="mobile-date">{{ booking.start_date|date:"d/m" }} - {{
-                                booking.end_date|date:"d/m/Y" }}</small>
+                            <br><small class="mobile-date">{{ booking.start_date|date:"d/m" }} - {{ booking.end_date|date:"d/m/Y" }}</small>
                         </span>
                         {% if booking.status == 'DEROGA' %}
-                        <br><span class="badge bg-warning text-dark" style="font-size: 0.7rem;">🔄 Deroga in
+                        <br><span class="badge bg-warning text-dark badge-deroga">🔄 Deroga in
                             corso</span>
                         {% endif %}
                     </td>
@@ -106,7 +105,7 @@
     <!-- 3. Requires Attention -->
     <div class="col-md-4">
         <div class="card h-100">
-            <div class="card-header bg-warning">
+            <div class="card-header app-card-header app-card-header--warning">
                 <h5 class="mb-0">Richiedono Attenzione</h5>
             </div>
             <div class="card-body">
@@ -133,7 +132,7 @@
     <!-- 4. My Requests -->
     <div class="col-md-4">
         <div class="card h-100">
-            <div class="card-header bg-primary text-white">
+            <div class="card-header app-card-header app-card-header--primary">
                 <h5 class="mb-0">Le Tue Richieste</h5>
             </div>
             <div class="card-body">
@@ -170,21 +169,21 @@
     <!-- 5. Storico -->
     <div class="col-md-4">
         <div class="card h-100">
-            <div class="card-header bg-info text-white d-flex justify-content-between align-items-center">
+            <div class="card-header app-card-header app-card-header--info d-flex justify-content-between align-items-center">
                 <h5 class="mb-0"><i class="fa-solid fa-history"></i> Storico</h5>
                 <button type="button" class="btn btn-sm btn-link text-white p-0" data-bs-toggle="modal"
                     data-bs-target="#auditModal" title="Vedi tutto il log">
                     <i class="fa-solid fa-scroll fa-lg"></i>
                 </button>
             </div>
-            <div class="card-body audit-log-body" style="max-height: 600px; overflow-y: auto;">
+            <div class="card-body audit-log-body app-scroll app-scroll--xl">
                 {% for audit in audit_history %}
                 <div
                     class="card mb-2 border-start border-3 {% if audit.action == 'APPROVED' or audit.action == 'DEROGA_ACCEPTED' %}border-success{% elif audit.action == 'REJECTED' or audit.action == 'DEROGA_REJECTED' %}border-danger{% elif audit.action == 'CREATED' %}border-primary{% else %}border-warning{% endif %}">
                     <div class="card-body p-2">
                         <div class="d-flex justify-content-between align-items-start">
                             <div>
-                                <strong class="text-uppercase" style="font-size: 0.85rem;">
+                                <strong class="text-uppercase app-audit-action">
                                     {% if audit.action == 'CREATED' %}📝 Creata
                                     {% elif audit.action == 'MODIFIED' %}✏️ Modificata
                                     {% elif audit.action == 'APPROVED' %}✅ Approvata
@@ -234,7 +233,7 @@
 <div class="row mt-4">
     <div class="col-12">
         <div class="card">
-            <div class="card-header bg-secondary text-white d-flex justify-content-between align-items-center">
+            <div class="card-header app-card-header app-card-header--neutral d-flex justify-content-between align-items-center">
                 <h5 class="mb-0"><i class="fa-solid fa-calendar-check me-2"></i>Periodi di Pertinenza</h5>
                 <div>
                     <a href="{% url 'ownership_periods' %}" class="btn btn-light btn-sm me-2" title="Gestisci periodi">
@@ -283,7 +282,7 @@
 <div class="modal fade" id="historyModal" tabindex="-1" aria-hidden="true">
     <div class="modal-dialog modal-lg modal-dialog-scrollable">
         <div class="modal-content">
-            <div class="modal-header bg-success text-white">
+            <div class="modal-header app-card-header app-card-header--success">
                 <h5 class="modal-title"><i class="fa-solid fa-history me-2"></i>Storico Prenotazioni</h5>
                 <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"
                     aria-label="Close"></button>
@@ -305,11 +304,10 @@
                                 <strong>{{ booking.title }}</strong>
                                 <span class="d-md-none mobile-booking-info">
                                     <br><small class="text-muted">{{ booking.family_group }}</small>
-                                    <br><small class="mobile-date">{{ booking.start_date|date:"d/m" }} - {{
-                                        booking.end_date|date:"d/m/Y" }}</small>
+                                    <br><small class="mobile-date">{{ booking.start_date|date:"d/m" }} - {{ booking.end_date|date:"d/m/Y" }}</small>
                                 </span>
                                 {% if booking.status == 'DEROGA' %}
-                                <br><span class="badge bg-warning text-dark" style="font-size: 0.7rem;">🔄 Deroga in
+                                <br><span class="badge bg-warning text-dark badge-deroga">🔄 Deroga in
                                     corso</span>
                                 {% endif %}
                             </td>
@@ -357,19 +355,19 @@
 <div class="modal fade" id="auditModal" tabindex="-1" aria-hidden="true">
     <div class="modal-dialog modal-lg modal-dialog-scrollable">
         <div class="modal-content">
-            <div class="modal-header bg-info text-white">
+            <div class="modal-header app-card-header app-card-header--info">
                 <h5 class="modal-title"><i class="fa-solid fa-scroll me-2"></i>Storico Log Completo</h5>
                 <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"
                     aria-label="Close"></button>
             </div>
-            <div class="modal-body bg-light">
+            <div class="modal-body">
                 {% for audit in all_audit_history %}
                 <div
                     class="card mb-2 border-start border-3 {% if audit.action == 'APPROVED' or audit.action == 'DEROGA_ACCEPTED' %}border-success{% elif audit.action == 'REJECTED' or audit.action == 'DEROGA_REJECTED' %}border-danger{% elif audit.action == 'CREATED' %}border-primary{% else %}border-warning{% endif %}">
                     <div class="card-body p-2">
                         <div class="d-flex justify-content-between align-items-start">
                             <div>
-                                <strong class="text-uppercase" style="font-size: 0.85rem;">
+                                <strong class="text-uppercase app-audit-action">
                                     {% if audit.action == 'CREATED' %}📝 Creata
                                     {% elif audit.action == 'MODIFIED' %}✏️ Modificata
                                     {% elif audit.action == 'APPROVED' %}✅ Approvata
@@ -422,7 +420,7 @@
 <div class="modal fade" id="ownershipPeriodsModal" tabindex="-1" aria-hidden="true">
     <div class="modal-dialog modal-lg modal-dialog-scrollable">
         <div class="modal-content">
-            <div class="modal-header bg-secondary text-white">
+            <div class="modal-header app-card-header app-card-header--neutral">
                 <h5 class="modal-title"><i class="fa-solid fa-calendar-check me-2"></i>Tutti i Periodi di Pertinenza
                 </h5>
                 <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"

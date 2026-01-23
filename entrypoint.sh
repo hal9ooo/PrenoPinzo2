@@ -3,9 +3,9 @@ set -e
 
 echo "=== PrenoPinzo Entrypoint ==="
 
-# Create data and media directories if they don't exist
-mkdir -p /app/data /app/media
-chown -R appuser:appuser /app/data /app/media
+# Create data, media, and backups directories if they don't exist
+mkdir -p /app/data /app/media /app/backups
+chown -R appuser:appuser /app/data /app/media /app/backups
 
 # Dump environment variables for cron
 printenv > /etc/environment

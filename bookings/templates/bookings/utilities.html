@@ -15,15 +15,14 @@
                 <!-- Webcam Card -->
                 <div class="col-lg-6 mb-4">
                     <div class="card h-100">
-                        <div class="card-header" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white;">
+                        <div class="card-header app-card-header app-card-header--primary">
                             <h5 class="mb-0"><i class="fa-solid fa-camera"></i> Webcam Pinzolo</h5>
                         </div>
                         <div class="card-body text-center">
                             <img id="webcam-image" 
                                  src="https://www.fioccodineve.com/images/webcam/webcam/image.jpg" 
                                  alt="Webcam Pinzolo" 
-                                 class="img-fluid rounded shadow"
-                                 style="max-width: 100%; cursor: pointer;"
+                                 class="img-fluid rounded shadow app-webcam-image"
                                  onclick="refreshWebcam()"
                                  title="Clicca per aggiornare">
                             <div class="mt-3">
@@ -41,7 +40,7 @@
                 <!-- Weather Card -->
                 <div class="col-lg-6 mb-4">
                     <div class="card h-100">
-                        <div class="card-header" style="background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%); color: white;">
+                        <div class="card-header app-card-header app-card-header--success">
                             <h5 class="mb-0"><i class="fa-solid fa-cloud-sun"></i> Meteo Pinzolo</h5>
                         </div>
                         <div class="card-body">
@@ -61,7 +60,7 @@
 
             <!-- Weather Forecast Details -->
             <div class="card mb-4">
-                <div class="card-header bg-info text-white">
+                <div class="card-header app-card-header app-card-header--info">
                     <h5 class="mb-0"><i class="fa-solid fa-calendar-days"></i> Previsioni 7 Giorni</h5>
                 </div>
                 <div class="card-body">
@@ -77,7 +76,7 @@
 
             <!-- Thermostat Control -->
             <div class="card mb-4">
-                <div class="card-header" style="background: linear-gradient(135deg, #ff6b35 0%, #f7931e 100%); color: white;">
+                <div class="card-header app-card-header app-card-header--warning">
                     <h5 class="mb-0"><i class="fa-solid fa-temperature-half"></i> Riscaldamento Casa</h5>
                 </div>
                 <div class="card-body">
@@ -96,7 +95,7 @@
             <div class="row">
                 <div class="col-lg-6 mb-4">
                     <div class="card h-100">
-                        <div class="card-header" style="background: linear-gradient(135deg, #00b4db 0%, #0083b0 100%); color: white;">
+                        <div class="card-header app-card-header app-card-header--info">
                             <h5 class="mb-0"><i class="fa-solid fa-person-skiing"></i> Stato Piste e Impianti</h5>
                         </div>
                         <div class="card-body">
@@ -118,7 +117,7 @@
 
                 <div class="col-lg-6 mb-4">
                     <div class="card h-100">
-                        <div class="card-header" style="background: linear-gradient(135deg, #a8edea 0%, #fed6e3 100%); color: #333;">
+                        <div class="card-header app-card-header app-card-header--neutral">
                             <h5 class="mb-0"><i class="fa-solid fa-snowflake"></i> Altezza Neve</h5>
                         </div>
                         <div class="card-body">
@@ -137,7 +136,7 @@
 
             <!-- Useful Numbers -->
             <div class="card mb-4">
-                <div class="card-header bg-danger text-white">
+                <div class="card-header app-card-header app-card-header--danger">
                     <h5 class="mb-0"><i class="fa-solid fa-phone"></i> Numeri Utili</h5>
                 </div>
                 <div class="card-body">
@@ -196,7 +195,7 @@
 
             <!-- Events Calendar -->
             <div class="card mb-4">
-                <div class="card-header" style="background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%); color: white;">
+                <div class="card-header app-card-header app-card-header--primary">
                     <h5 class="mb-0"><i class="fa-solid fa-calendar-star"></i> Eventi in Zona</h5>
                 </div>
                 <div class="card-body">
@@ -489,7 +488,7 @@ function renderThermostat() {
                             <button class="btn btn-lg btn-outline-primary" onclick="adjustTemp(-0.5)" ${targetTemp <= 7 ? 'disabled' : ''}>
                                 <i class="fa-solid fa-minus"></i>
                             </button>
-                            <div class="text-center" style="min-width: 100px;">
+                            <div class="text-center app-target-temp">
                                 <h3 class="display-6 mb-0" id="target-temp-display">${targetTemp}°C</h3>
                                 <small class="text-muted">Target</small>
                             </div>

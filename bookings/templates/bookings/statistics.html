@@ -4,60 +4,12 @@
 
 {% block extra_head %}
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-<style>
-    .stat-card {
-        border-left: 4px solid;
-    }
 
-    .stat-card.blue {
-        border-left-color: #0d6efd;
-    }
-
-    .stat-card.green {
-        border-left-color: #198754;
-    }
-
-    .stat-card.orange {
-        border-left-color: #fd7e14;
-    }
-
-    .stat-card.purple {
-        border-left-color: #6f42c1;
-    }
-
-    .stat-card.red {
-        border-left-color: #dc3545;
-    }
-
-    .stat-card.teal {
-        border-left-color: #20c997;
-    }
-
-    .stat-number {
-        font-size: 2.5rem;
-        font-weight: bold;
-    }
-
-    .stat-label {
-        color: #6c757d;
-        font-size: 0.9rem;
-    }
-
-    .comparison-bar {
-        height: 30px;
-        border-radius: 15px;
-        overflow: hidden;
-    }
-
-    .progress-section {
-        transition: width 0.5s ease;
-    }
-</style>
 {% endblock %}
 
 {% block content %}
 <div class="d-flex justify-content-between align-items-center mb-4">
-    <h2><i class="fa-solid fa-chart-pie me-2"></i>Statistiche</h2>
+    <h2 class="app-page-title"><i class="fa-solid fa-chart-pie me-2"></i>Statistiche</h2>
     <div class="dropdown">
         <button class="btn btn-outline-primary dropdown-toggle" type="button" data-bs-toggle="dropdown">
             <i class="fa-solid fa-download me-1"></i> Esporta iCal
@@ -85,34 +37,52 @@
 <h5 class="mb-3"><i class="fa-solid fa-user me-2"></i>Le Tue Statistiche ({{ user_group }})</h5>
 <div class="row mb-4">
     <div class="col-md-3">
-        <div class="card stat-card green">
+        <div class="card stat-card stat-card--neutral">
             <div class="card-body text-center">
-                <div class="stat-number text-success">{{ my_total_days }}</div>
+                <div class="stat-number">{{ my_total_days }}</div>
                 <div class="stat-label">Giorni Totali Prenotati</div>
             </div>
         </div>
     </div>
     <div class="col-md-3">
-        <div class="card stat-card blue">
+        <div class="card stat-card stat-card--neutral">
             <div class="card-body text-center">
-                <div class="stat-number text-primary">{{ my_total_periods }}</div>
+                <div class="stat-number">{{ my_total_periods }}</div>
                 <div class="stat-label">Periodi Prenotati</div>
             </div>
         </div>
     </div>
     <div class="col-md-3">
-        <div class="card stat-card orange">
+        <div class="card stat-card stat-card--neutral">
             <div class="card-body text-center">
-                <div class="stat-number text-warning">{{ my_max_period }}</div>
+                <div class="stat-number">{{ my_max_period }}</div>
                 <div class="stat-label">Periodo Più Lungo (giorni)</div>
             </div>
         </div>
     </div>
     <div class="col-md-3">
-        <div class="card stat-card purple">
+        <div class="card stat-card stat-card--neutral">
             <div class="card-body text-center">
-                <div class="stat-number text-purple">{{ my_avg_period }}</div>
+                <div class="stat-number">{{ my_avg_period }}</div>
                 <div class="stat-label">Media Giorni/Periodo</div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="card mb-4 stats-panel">
+    <div class="card-header">
+        <i class="fa-solid fa-scale-balanced me-2"></i>Riepilogo Giorni Totali
+    </div>
+    <div class="card-body">
+        <div class="row text-center">
+            <div class="col-md-6">
+                <div class="summary-number">{{ my_total_days }}</div>
+                <div class="summary-label">Totale giorni — {{ user_group }}</div>
+            </div>
+            <div class="col-md-6">
+                <div class="summary-number">{{ other_total_days }}</div>
+                <div class="summary-label">Totale giorni — {{ other_group }}</div>
             </div>
         </div>
     </div>
@@ -120,30 +90,29 @@
 
 <!-- Current Year Comparison -->
 <h5 class="mb-3"><i class="fa-solid fa-calendar-check me-2"></i>Anno {{ current_year }}</h5>
-<div class="card mb-4">
+<div class="card mb-4 stats-panel">
     <div class="card-body">
-        <div class="row align-items-center">
-            <div class="col-md-8">
-                <p class="mb-2"><strong>Distribuzione giorni tra le famiglie:</strong></p>
-                <div class="comparison-bar d-flex">
-                    <div class="progress-section bg-success d-flex align-items-center justify-content-center text-white"
-                        style="width: {{ my_percentage }}%;">
-                        {% if my_percentage > 10 %}{{ user_group }}: {{ my_percentage }}%{% endif %}
-                    </div>
-                    <div class="progress-section bg-primary d-flex align-items-center justify-content-center text-white"
-                        style="width: {{ other_percentage }}%;">
-                        {% if other_percentage > 10 %}{{ other_group }}: {{ other_percentage }}%{% endif %}
-                    </div>
+        <div class="row g-3 align-items-center">
+            <div class="col-lg-4">
+                <div class="chart-wrap chart-xs">
+                    <canvas id="yearShareChart" aria-label="Distribuzione giorni tra le famiglie"></canvas>
                 </div>
             </div>
-            <div class="col-md-4 text-center">
+            <div class="col-lg-4">
+                <p class="mb-2"><strong>Distribuzione giorni tra le famiglie:</strong></p>
+                <div class="comparison-legend d-flex flex-wrap gap-2">
+                    <span class="badge comparison-badge comparison-badge--primary">{{ user_group }}: {{ my_percentage }}%</span>
+                    <span class="badge comparison-badge comparison-badge--muted">{{ other_group }}: {{ other_percentage }}%</span>
+                </div>
+            </div>
+            <div class="col-lg-4 text-center">
                 <div class="row">
                     <div class="col-6">
-                        <span class="badge bg-success fs-6">{{ my_current_year_days }} gg</span><br>
+                        <span class="badge comparison-badge comparison-badge--primary fs-6">{{ my_current_year_days }} gg</span><br>
                         <small>{{ my_current_year_periods }} periodi</small>
                     </div>
                     <div class="col-6">
-                        <span class="badge bg-primary fs-6">{{ other_current_year_days }} gg</span><br>
+                        <span class="badge comparison-badge comparison-badge--muted fs-6">{{ other_current_year_days }} gg</span><br>
                         <small>{{ other_current_year_periods }} periodi</small>
                     </div>
                 </div>
@@ -156,33 +125,33 @@
 <h5 class="mb-3"><i class="fa-solid fa-bridge me-2"></i>Statistiche Ponti</h5>
 <div class="row mb-4">
     <div class="col-md-3">
-        <div class="card stat-card green h-100">
+        <div class="card stat-card stat-card--neutral h-100">
             <div class="card-body text-center">
-                <div class="stat-number text-success">{{ my_total_bridges }}</div>
+                <div class="stat-number">{{ my_total_bridges }}</div>
                 <div class="stat-label">Ponti Totali ({{ user_group }})</div>
             </div>
         </div>
     </div>
     <div class="col-md-3">
-        <div class="card stat-card blue h-100">
+        <div class="card stat-card stat-card--neutral h-100">
             <div class="card-body text-center">
-                <div class="stat-number text-primary">{{ other_total_bridges }}</div>
+                <div class="stat-number">{{ other_total_bridges }}</div>
                 <div class="stat-label">Ponti Totali ({{ other_group }})</div>
             </div>
         </div>
     </div>
     <div class="col-md-3">
-        <div class="card stat-card green h-100">
+        <div class="card stat-card stat-card--neutral h-100">
             <div class="card-body text-center">
-                <div class="stat-number text-success">{{ my_current_year_bridges }}</div>
+                <div class="stat-number">{{ my_current_year_bridges }}</div>
                 <div class="stat-label">Ponti {{ current_year }} ({{ user_group }})</div>
             </div>
         </div>
     </div>
     <div class="col-md-3">
-        <div class="card stat-card blue h-100">
+        <div class="card stat-card stat-card--neutral h-100">
             <div class="card-body text-center">
-                <div class="stat-number text-primary">{{ other_current_year_bridges }}</div>
+                <div class="stat-number">{{ other_current_year_bridges }}</div>
                 <div class="stat-label">Ponti {{ current_year }} ({{ other_group }})</div>
             </div>
         </div>
@@ -190,37 +159,36 @@
 </div>
 
 <!-- Bridge Balance Bar -->
-<div class="card mb-4">
+<div class="card mb-4 stats-panel">
     <div class="card-header">
         <i class="fa-solid fa-scale-balanced me-2"></i>Bilanciamento Ponti
     </div>
     <div class="card-body">
-        <div class="row align-items-center">
-            <div class="col-md-8">
-                <p class="mb-2"><strong>Distribuzione ponti tra le famiglie:</strong></p>
+        <div class="row g-3 align-items-center">
+            <div class="col-lg-4">
                 {% if my_total_bridges > 0 or other_total_bridges > 0 %}
-                <div class="comparison-bar d-flex">
-                    <div class="progress-section bg-success d-flex align-items-center justify-content-center text-white"
-                        style="width: {{ my_bridge_percentage }}%;">
-                        {% if my_bridge_percentage > 10 %}{{ user_group }}: {{ my_bridge_percentage }}%{% endif %}
-                    </div>
-                    <div class="progress-section bg-primary d-flex align-items-center justify-content-center text-white"
-                        style="width: {{ other_bridge_percentage }}%;">
-                        {% if other_bridge_percentage > 10 %}{{ other_group }}: {{ other_bridge_percentage }}%{% endif %}
-                    </div>
+                <div class="chart-wrap chart-xs">
+                    <canvas id="bridgeBalanceChart" aria-label="Bilanciamento ponti tra le famiglie"></canvas>
                 </div>
                 {% else %}
                 <div class="text-muted">Nessun ponte trovato nelle prenotazioni</div>
                 {% endif %}
             </div>
-            <div class="col-md-4 text-center">
+            <div class="col-lg-4">
+                <p class="mb-2"><strong>Distribuzione ponti tra le famiglie:</strong></p>
+                <div class="comparison-legend d-flex flex-wrap gap-2">
+                    <span class="badge comparison-badge comparison-badge--primary">{{ user_group }}: {{ my_bridge_percentage }}%</span>
+                    <span class="badge comparison-badge comparison-badge--muted">{{ other_group }}: {{ other_bridge_percentage }}%</span>
+                </div>
+            </div>
+            <div class="col-lg-4 text-center">
                 <div class="row">
                     <div class="col-6">
-                        <span class="badge bg-success fs-6">{{ my_total_bridges }} ponti</span><br>
+                        <span class="badge comparison-badge comparison-badge--primary fs-6">{{ my_total_bridges }} ponti</span><br>
                         <small>{{ my_bridge_percentage }}%</small>
                     </div>
                     <div class="col-6">
-                        <span class="badge bg-primary fs-6">{{ other_total_bridges }} ponti</span><br>
+                        <span class="badge comparison-badge comparison-badge--muted fs-6">{{ other_total_bridges }} ponti</span><br>
                         <small>{{ other_bridge_percentage }}%</small>
                     </div>
                 </div>
@@ -230,15 +198,17 @@
 </div>
 
 <!-- Bridge Details -->
-<div class="row mb-4">
+<div class="row mb-4 g-3">
     <div class="col-md-6">
-        <div class="card h-100">
+        <div class="card h-100 stats-panel">
             <div class="card-header">
-                <i class="fa-solid fa-chart-pie me-2"></i>Ponti per Tipo ({{ user_group }})
+                <i class="fa-solid fa-chart-bar me-2"></i>Ponti per Tipo ({{ user_group }})
             </div>
             <div class="card-body">
                 {% if my_bridges_by_type %}
-                <canvas id="myBridgeTypeChart" height="200"></canvas>
+                <div class="chart-wrap chart-sm">
+                    <canvas id="myBridgeTypeChart" aria-label="Ponti per tipo ({{ user_group }})"></canvas>
+                </div>
                 {% else %}
                 <p class="text-muted text-center">Nessun ponte registrato</p>
                 {% endif %}
@@ -246,13 +216,15 @@
         </div>
     </div>
     <div class="col-md-6">
-        <div class="card h-100">
+        <div class="card h-100 stats-panel">
             <div class="card-header">
-                <i class="fa-solid fa-chart-pie me-2"></i>Ponti per Tipo ({{ other_group }})
+                <i class="fa-solid fa-chart-bar me-2"></i>Ponti per Tipo ({{ other_group }})
             </div>
             <div class="card-body">
                 {% if other_bridges_by_type %}
-                <canvas id="otherBridgeTypeChart" height="200"></canvas>
+                <div class="chart-wrap chart-sm">
+                    <canvas id="otherBridgeTypeChart" aria-label="Ponti per tipo ({{ other_group }})"></canvas>
+                </div>
                 {% else %}
                 <p class="text-muted text-center">Nessun ponte registrato</p>
                 {% endif %}
@@ -266,10 +238,10 @@
 <div class="row mb-4">
     <div class="col-md-6">
         <div class="card h-100">
-            <div class="card-header bg-success text-white">
+            <div class="card-header app-card-header app-card-header--neutral">
                 <i class="fa-solid fa-list me-2"></i>Ultimi Ponti ({{ user_group }})
             </div>
-            <div class="card-body p-0" style="max-height: 300px; overflow-y: auto;">
+            <div class="card-body p-0 app-scroll app-scroll--lg">
                 {% if my_bridge_details %}
                 <table class="table table-sm table-hover mb-0">
                     <thead class="table-light sticky-top">
@@ -284,7 +256,7 @@
                         <tr>
                             <td><small>{{ bridge.date|date:"d/m/Y" }}</small></td>
                             <td><small>{{ bridge.name }}</small></td>
-                            <td><span class="badge bg-success">{{ bridge.type }}</span></td>
+                            <td><span class="badge comparison-badge comparison-badge--primary">{{ bridge.type }}</span></td>
                         </tr>
                         {% endfor %}
                     </tbody>
@@ -297,10 +269,10 @@
     </div>
     <div class="col-md-6">
         <div class="card h-100">
-            <div class="card-header bg-primary text-white">
+            <div class="card-header app-card-header app-card-header--neutral">
                 <i class="fa-solid fa-list me-2"></i>Ultimi Ponti ({{ other_group }})
             </div>
-            <div class="card-body p-0" style="max-height: 300px; overflow-y: auto;">
+            <div class="card-body p-0 app-scroll app-scroll--lg">
                 {% if other_bridge_details %}
                 <table class="table table-sm table-hover mb-0">
                     <thead class="table-light sticky-top">
@@ -315,7 +287,7 @@
                         <tr>
                             <td><small>{{ bridge.date|date:"d/m/Y" }}</small></td>
                             <td><small>{{ bridge.name }}</small></td>
-                            <td><span class="badge bg-primary">{{ bridge.type }}</span></td>
+                            <td><span class="badge comparison-badge comparison-badge--muted">{{ bridge.type }}</span></td>
                         </tr>
                         {% endfor %}
                     </tbody>
@@ -333,12 +305,12 @@
 <h5 class="mb-3"><i class="fa-solid fa-list-check me-2"></i>Le Tue Azioni</h5>
 <div class="row mb-4">
     <div class="col-md-4">
-        <div class="card stat-card teal">
+        <div class="card stat-card stat-card--neutral">
             <div class="card-body">
                 <div class="d-flex justify-content-between align-items-center">
                     <div>
                         <h6 class="text-muted mb-0">Prenotazioni Create</h6>
-                        <span class="stat-number" style="font-size: 2rem;">{{ my_creations }}</span>
+                        <span class="stat-number stat-number--lg">{{ my_creations }}</span>
                     </div>
                     <i class="fa-solid fa-plus-circle fa-2x text-muted"></i>
                 </div>
@@ -346,27 +318,27 @@
         </div>
     </div>
     <div class="col-md-4">
-        <div class="card stat-card green">
+        <div class="card stat-card stat-card--neutral">
             <div class="card-body">
                 <div class="d-flex justify-content-between align-items-center">
                     <div>
                         <h6 class="text-muted mb-0">Richieste Approvate</h6>
-                        <span class="stat-number text-success" style="font-size: 2rem;">{{ my_approvals }}</span>
+                        <span class="stat-number stat-number--lg">{{ my_approvals }}</span>
                     </div>
-                    <i class="fa-solid fa-check-circle fa-2x text-success"></i>
+                    <i class="fa-solid fa-check-circle fa-2x text-muted"></i>
                 </div>
             </div>
         </div>
     </div>
     <div class="col-md-4">
-        <div class="card stat-card red">
+        <div class="card stat-card stat-card--neutral">
             <div class="card-body">
                 <div class="d-flex justify-content-between align-items-center">
                     <div>
                         <h6 class="text-muted mb-0">Richieste Rifiutate</h6>
-                        <span class="stat-number text-danger" style="font-size: 2rem;">{{ my_rejections }}</span>
+                        <span class="stat-number stat-number--lg">{{ my_rejections }}</span>
                     </div>
-                    <i class="fa-solid fa-times-circle fa-2x text-danger"></i>
+                    <i class="fa-solid fa-times-circle fa-2x text-muted"></i>
                 </div>
             </div>
         </div>
@@ -377,7 +349,7 @@
     <div class="col-md-3">
         <div class="card">
             <div class="card-body text-center">
-                <i class="fa-solid fa-pen-to-square fa-2x text-warning mb-2"></i>
+                <i class="fa-solid fa-pen-to-square fa-2x text-muted mb-2"></i>
                 <h3>{{ my_modifications }}</h3>
                 <small class="text-muted">Modifiche</small>
             </div>
@@ -386,7 +358,7 @@
     <div class="col-md-3">
         <div class="card">
             <div class="card-body text-center">
-                <i class="fa-solid fa-arrows-rotate fa-2x text-info mb-2"></i>
+                <i class="fa-solid fa-arrows-rotate fa-2x text-muted mb-2"></i>
                 <h3>{{ my_deroga_requests }}</h3>
                 <small class="text-muted">Deroghe Richieste</small>
             </div>
@@ -395,7 +367,7 @@
     <div class="col-md-3">
         <div class="card">
             <div class="card-body text-center">
-                <i class="fa-solid fa-circle-check fa-2x text-success mb-2"></i>
+                <i class="fa-solid fa-circle-check fa-2x text-muted mb-2"></i>
                 <h3>{{ deroga_accepted }}</h3>
                 <small class="text-muted">Deroghe Accettate</small>
             </div>
@@ -420,7 +392,9 @@
                 <i class="fa-solid fa-chart-bar me-2"></i>Distribuzione Mensile (Giorni Prenotati)
             </div>
             <div class="card-body">
-                <canvas id="monthlyChart" height="200"></canvas>
+                <div class="chart-wrap chart-md">
+                    <canvas id="monthlyChart" aria-label="Distribuzione mensile giorni prenotati"></canvas>
+                </div>
             </div>
         </div>
     </div>
@@ -429,7 +403,7 @@
             <div class="card-header">
                 <i class="fa-solid fa-history me-2"></i>Storico per Anno
             </div>
-            <div class="card-body" style="max-height: 250px; overflow-y: auto;">
+            <div class="card-body app-scroll app-scroll--md">
                 <table class="table table-sm">
                     <thead>
                         <tr>
@@ -443,7 +417,7 @@
                         <tr>
                             <td><strong>{{ year }}</strong></td>
                             <td>{{ data.count }}</td>
-                            <td><span class="badge bg-success">{{ data.days }}</span></td>
+                            <td><span class="badge comparison-badge comparison-badge--muted">{{ data.days }}</span></td>
                         </tr>
                         {% empty %}
                         <tr>
@@ -477,7 +451,7 @@
                     <td><strong>{{ booking.title }}</strong></td>
                     <td>{{ booking.start_date|date:"d M Y" }}</td>
                     <td>{{ booking.end_date|date:"d M Y" }}</td>
-                    <td><span class="badge bg-primary">{{ booking.end_date|timesince:booking.start_date }}</span></td>
+                    <td><span class="badge comparison-badge comparison-badge--primary">{{ booking.end_date|timesince:booking.start_date }}</span></td>
                 </tr>
                 {% endfor %}
             </tbody>
@@ -490,6 +464,50 @@
 
 {% block extra_scripts %}
 <script>
+    const baseFont = "'Manrope', 'Outfit', sans-serif";
+    const mutedText = '#5b667a';
+    const gridColor = '#e7edf4';
+    const accent = 'rgba(43, 108, 255, 0.85)';
+    const neutral = 'rgba(148, 163, 184, 0.85)';
+
+    Chart.defaults.font.family = baseFont;
+    Chart.defaults.color = mutedText;
+
+    function palette(count, base, falloff = 0.08) {
+        return Array.from({ length: count }).map((_, i) => {
+            const alpha = Math.max(0.25, 0.85 - i * falloff);
+            if (base === 'blue') return `rgba(43, 108, 255, ${alpha})`;
+            return `rgba(148, 163, 184, ${alpha})`;
+        });
+    }
+
+    function createDoughnutChart(ctx, labels, values, colors) {
+        return new Chart(ctx, {
+            type: 'doughnut',
+            data: {
+                labels: labels,
+                datasets: [{
+                    data: values,
+                    backgroundColor: colors,
+                    borderWidth: 2,
+                    borderColor: '#fff'
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                cutout: '70%',
+                plugins: {
+                    legend: { display: false },
+                    tooltip: {
+                        bodyFont: { family: baseFont },
+                        titleFont: { family: baseFont }
+                    }
+                }
+            }
+        });
+    }
+
     // Monthly Chart
     const ctx = document.getElementById('monthlyChart').getContext('2d');
     new Chart(ctx, {
@@ -499,31 +517,63 @@
         datasets: [{
             label: 'Giorni prenotati',
             data: {{ monthly_data| safe }},
-        backgroundColor: 'rgba(25, 135, 84, 0.7)',
-        borderColor: 'rgba(25, 135, 84, 1)',
-        borderWidth: 1
-            }]
+            backgroundColor: 'rgba(43, 108, 255, 0.45)',
+            borderColor: 'rgba(43, 108, 255, 0.75)',
+            borderWidth: 1
+        }]
         },
         options: {
-        responsive: true,
-        plugins: {
-            legend: { display: false }
-        },
-        scales: {
-            y: {
-                beginAtZero: true,
-                ticks: { stepSize: 1 }
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: { display: false },
+                tooltip: {
+                    bodyFont: { family: baseFont },
+                    titleFont: { family: baseFont }
+                }
+            },
+            scales: {
+                y: {
+                    beginAtZero: true,
+                    ticks: { stepSize: 1, color: mutedText, font: { family: baseFont } },
+                    grid: { color: gridColor }
+                },
+                x: {
+                    grid: { color: gridColor },
+                    ticks: { color: mutedText, font: { family: baseFont } }
+                }
             }
         }
-    }
     });
+
+    // Year share doughnut
+    const yearShareEl = document.getElementById('yearShareChart');
+    if (yearShareEl) {
+        createDoughnutChart(
+            yearShareEl.getContext('2d'),
+            ['{{ user_group }}', '{{ other_group }}'],
+            [{{ my_percentage }}, {{ other_percentage }}],
+            [accent, neutral]
+        );
+    }
+
+    // Bridge balance doughnut
+    const bridgeBalanceEl = document.getElementById('bridgeBalanceChart');
+    if (bridgeBalanceEl) {
+        createDoughnutChart(
+            bridgeBalanceEl.getContext('2d'),
+            ['{{ user_group }}', '{{ other_group }}'],
+            [{{ my_bridge_percentage }}, {{ other_bridge_percentage }}],
+            [accent, neutral]
+        );
+    }
 
     // Bridge Type Charts - Colors for different bridge types
     const bridgeColors = {
-        'Ponte Lunedì': 'rgba(40, 167, 69, 0.8)',      // Green
-        'Super-Ponte Martedì': 'rgba(23, 162, 184, 0.8)', // Cyan
-        'Ponte Giovedì': 'rgba(255, 193, 7, 0.8)',    // Yellow
-        'Ponte Venerdì': 'rgba(220, 53, 69, 0.8)'     // Red
+        'Ponte Lunedì': 'rgba(43, 108, 255, 0.85)',
+        'Super-Ponte Martedì': 'rgba(99, 102, 241, 0.85)',
+        'Ponte Giovedì': 'rgba(129, 140, 248, 0.85)',
+        'Ponte Venerdì': 'rgba(148, 163, 184, 0.85)'
     };
 
     {% if my_bridges_by_type %}
@@ -531,27 +581,42 @@
     const myBridgeData = {{ my_bridges_by_type| safe }};
     const myLabels = Object.keys(myBridgeData);
     const myValues = Object.values(myBridgeData);
-    const myColors = myLabels.map(label => bridgeColors[label] || 'rgba(108, 117, 125, 0.8)');
+    const myColors = myLabels.map((label, idx) => bridgeColors[label] || palette(myLabels.length, 'blue')[idx]);
 
     const myBridgeCtx = document.getElementById('myBridgeTypeChart').getContext('2d');
     new Chart(myBridgeCtx, {
-        type: 'doughnut',
+        type: 'bar',
         data: {
             labels: myLabels,
             datasets: [{
                 data: myValues,
                 backgroundColor: myColors,
-                borderWidth: 2,
-                borderColor: '#fff'
+                borderRadius: 8,
+                borderSkipped: false,
+                maxBarThickness: 18
             }]
         },
         options: {
             responsive: true,
-            maintainAspectRatio: true,
+            maintainAspectRatio: false,
+            indexAxis: 'y',
             plugins: {
-                legend: {
-                    position: 'bottom',
-                    labels: { font: { size: 11 } }
+                legend: { display: false },
+                tooltip: {
+                    bodyFont: { family: baseFont },
+                    titleFont: { family: baseFont }
+                }
+            }
+            ,
+            scales: {
+                x: {
+                    grid: { color: gridColor },
+                    ticks: { color: mutedText, font: { family: baseFont } },
+                    beginAtZero: true
+                },
+                y: {
+                    grid: { display: false },
+                    ticks: { color: mutedText, font: { family: baseFont } }
                 }
             }
         }
@@ -563,27 +628,42 @@
     const otherBridgeData = {{ other_bridges_by_type| safe }};
     const otherLabels = Object.keys(otherBridgeData);
     const otherValues = Object.values(otherBridgeData);
-    const otherColors = otherLabels.map(label => bridgeColors[label] || 'rgba(108, 117, 125, 0.8)');
+    const otherColors = otherLabels.map((label, idx) => bridgeColors[label] || palette(otherLabels.length, 'neutral')[idx]);
 
     const otherBridgeCtx = document.getElementById('otherBridgeTypeChart').getContext('2d');
     new Chart(otherBridgeCtx, {
-        type: 'doughnut',
+        type: 'bar',
         data: {
             labels: otherLabels,
             datasets: [{
                 data: otherValues,
                 backgroundColor: otherColors,
-                borderWidth: 2,
-                borderColor: '#fff'
+                borderRadius: 8,
+                borderSkipped: false,
+                maxBarThickness: 18
             }]
         },
         options: {
             responsive: true,
-            maintainAspectRatio: true,
+            maintainAspectRatio: false,
+            indexAxis: 'y',
             plugins: {
-                legend: {
-                    position: 'bottom',
-                    labels: { font: { size: 11 } }
+                legend: { display: false },
+                tooltip: {
+                    bodyFont: { family: baseFont },
+                    titleFont: { family: baseFont }
+                }
+            }
+            ,
+            scales: {
+                x: {
+                    grid: { color: gridColor },
+                    ticks: { color: mutedText, font: { family: baseFont } },
+                    beginAtZero: true
+                },
+                y: {
+                    grid: { display: false },
+                    ticks: { color: mutedText, font: { family: baseFont } }
                 }
             }
         }

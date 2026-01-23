@@ -7,4 +7,7 @@
 # Sync user emails from Env to DB (Every 10 minutes)
 */10 * * * * appuser cd /app && /opt/venv/bin/python manage.py sync_user_emails >> /var/log/cron.log 2>&1
 
+# Daily DB backup with retention (02:30)
+30 2 * * * appuser DB_PATH=/app/data/db.sqlite3 BACKUP_DIR=/app/backups /app/scripts/backup_db.sh >> /var/log/cron.log 2>&1
+
 # Empty line required for valid crontab

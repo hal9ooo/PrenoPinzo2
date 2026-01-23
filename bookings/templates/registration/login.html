@@ -8,6 +8,10 @@
         <div class="card mt-5">
             <div class="card-body">
                 <h3 class="card-title text-center mb-4">Accedi a PrenoPinzo</h3>
+                <div id="ios-install-hint" class="alert alert-info small d-none" role="alert">
+                    <i class="fa-solid fa-mobile-screen-button me-2"></i>
+                    Su iPhone/iPad: apri in Safari → Condividi → Aggiungi alla schermata Home.
+                </div>
                 <form method="post">
                     {% csrf_token %}
                     {% if form.errors %}
@@ -37,9 +41,26 @@
                     <div class="text-center mt-3">
                         <a href="{% url 'password_reset' %}" class="text-muted">Password dimenticata?</a>
                     </div>
+                    <p class="text-muted small mt-3 mb-0 text-center">
+                        L'app funziona bene su mobile, ma si vede meglio su PC.
+                    </p>
                 </form>
             </div>
         </div>
     </div>
 </div>
+{% endblock %}
+
+{% block extra_scripts %}
+<script>
+    (function () {
+        const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream;
+        const isStandalone = window.matchMedia && window.matchMedia('(display-mode: standalone)').matches;
+        const isSafariStandalone = 'standalone' in navigator && navigator.standalone;
+        const hint = document.getElementById('ios-install-hint');
+        if (hint && isIOS && !isStandalone && !isSafariStandalone) {
+            hint.classList.remove('d-none');
+        }
+    })();
+</script>
 {% endblock %}

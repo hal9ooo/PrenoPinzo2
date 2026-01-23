@@ -1,8 +1,10 @@
 from django.urls import path
+from django.views.generic import TemplateView
 from django.contrib.auth import views as auth_views
 from . import views
 
 urlpatterns = [
+    path('sw.js', TemplateView.as_view(template_name='sw.js', content_type='application/javascript'), name='service_worker'),
     path('', views.dashboard, name='dashboard'),
     path('calendar/', views.calendar_view, name='calendar'),
     path('statistics/', views.statistics_view, name='statistics'),

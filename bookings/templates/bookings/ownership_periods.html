@@ -75,6 +75,42 @@
     </div>
 </div>
 
+<div class="card mt-4 ownership-timeline">
+    <div class="card-header app-card-header app-card-header--neutral">
+        <i class="fa-solid fa-timeline me-2"></i>Panoramica Periodi {{ timeline_year }}
+    </div>
+    <div class="card-body">
+        <p class="text-muted small mb-3">Visualizzazione annuale dei periodi di pertinenza.</p>
+        {% for half in timeline_halves %}
+        <div class="timeline-half">
+            <div class="timeline-half-header">
+                <span class="timeline-half-title">{{ half.label }}</span>
+                <span class="timeline-half-range">{{ half.start|date:'d M' }} – {{ half.end|date:'d M' }}</span>
+            </div>
+            <div class="timeline-scale">
+                {% for month in half.months %}
+                <span class="timeline-month" style="left: {{ month.left }}%;">{{ month.label }}</span>
+                {% if not forloop.first %}
+                <span class="timeline-tick" style="left: {{ month.left }}%;"></span>
+                {% endif %}
+                {% endfor %}
+            </div>
+            <div class="timeline-track" style="--rows: {{ half.segments|length|default:1 }};">
+                {% for seg in half.segments %}
+                <div class="timeline-bar {% if seg.family_group == user_group %}timeline-bar--primary{% else %}timeline-bar--muted{% endif %}"
+                    style="--left: {{ seg.left }}%; --width: {{ seg.width }}%; --row: {{ forloop.counter0 }};"
+                    title="{{ seg.family_group }} · {{ seg.label }} · {{ seg.start|date:'d M Y' }} → {{ seg.end|date:'d M Y' }}">
+                    <span class="timeline-bar-label">{{ seg.family_group }} {{ seg.start|date:'d/m' }}–{{ seg.end|date:'d/m' }}</span>
+                </div>
+                {% empty %}
+                <div class="timeline-empty">Nessun periodo in {{ half.label }}</div>
+                {% endfor %}
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+</div>
+
 <div class="card mt-4">
     <div class="card-body">
         <h6><i class="fa-solid fa-lightbulb text-warning"></i> Come funziona</h6>
@@ -118,6 +154,27 @@
             customClass: {
                 confirmButton: 'btn btn-success btn-lg me-2',
                 cancelButton: 'btn btn-secondary btn-lg'
+            },
+            didOpen: () => {
+                const startInput = document.getElementById('period-start');
+                const endInput = document.getElementById('period-end');
+
+                function setEndDateMin(startValue) {
+                    if (!startValue) return;
+                    const startDate = new Date(startValue);
+                    const minEndDate = new Date(startDate);
+                    minEndDate.setDate(minEndDate.getDate() + 1);
+                    const minEndValue = minEndDate.toISOString().split('T')[0];
+                    endInput.min = minEndValue;
+
+                    if (!endInput.value || endInput.value < minEndValue) {
+                        endInput.value = minEndValue;
+                    }
+                }
+
+                startInput.addEventListener('change', (e) => {
+                    setEndDateMin(e.target.value);
+                });
             },
             preConfirm: () => {
                 return [

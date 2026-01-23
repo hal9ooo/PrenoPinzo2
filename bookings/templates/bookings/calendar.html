@@ -3,9 +3,10 @@
 {% block title %}Calendario{% endblock %}
 
 {% block content %}
-<h2 class="mb-2">Calendario</h2>
+<h2 class="mb-2 app-page-title">Calendario</h2>
 <div class="card">
-    <div class="card-body p-2 p-md-3" style="overflow: visible;">
+    <div class="card-body p-2 p-md-3 app-calendar-card">
+        <div id="ownership-strip" class="ownership-strip"></div>
         <div id='calendar'></div>
     </div>
 </div>
@@ -53,86 +54,7 @@
 <div id="bottom-sheet-overlay" class="bottom-sheet-overlay" onclick="closeMobileBookingForm()"></div>
 {% endblock %}
 
-{% block extra_head %}
-<style>
-    /* Floating Action Button */
-    .fab-button {
-        position: fixed;
-        bottom: 20px;
-        right: 20px;
-        width: 60px;
-        height: 60px;
-        border-radius: 50%;
-        background: linear-gradient(135deg, #0d6efd 0%, #0a58ca 100%);
-        color: white;
-        border: none;
-        box-shadow: 0 4px 12px rgba(13, 110, 253, 0.4);
-        font-size: 1.5rem;
-        z-index: 1000;
-        transition: transform 0.2s, box-shadow 0.2s;
-    }
-
-    .fab-button:hover,
-    .fab-button:active {
-        transform: scale(1.1);
-        box-shadow: 0 6px 16px rgba(13, 110, 253, 0.5);
-    }
-
-    /* Bottom Sheet */
-    .bottom-sheet {
-        position: fixed;
-        bottom: -100%;
-        left: 0;
-        right: 0;
-        background: white;
-        border-radius: 20px 20px 0 0;
-        padding: 20px;
-        z-index: 1050;
-        transition: bottom 0.3s ease-out;
-        max-height: 80vh;
-        overflow-y: auto;
-    }
-
-    @media (min-width: 768px) {
-        .bottom-sheet {
-            left: 50%;
-            right: auto;
-            width: 500px;
-            transform: translateX(-50%);
-            border-radius: 20px 20px 0 0;
-            box-shadow: 0 -5px 20px rgba(0, 0, 0, 0.15);
-        }
-    }
-
-    .bottom-sheet.active {
-        bottom: 0;
-    }
-
-    .bottom-sheet-header {
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        margin-bottom: 20px;
-        padding-bottom: 15px;
-        border-bottom: 1px solid #eee;
-    }
-
-    .bottom-sheet-overlay {
-        position: fixed;
-        top: 0;
-        left: 0;
-        right: 0;
-        bottom: 0;
-        background: rgba(0, 0, 0, 0.5);
-        z-index: 1040;
-        display: none;
-    }
-
-    .bottom-sheet-overlay.active {
-        display: block;
-    }
-</style>
-{% endblock %}
+{% block extra_head %}{% endblock %}
 
 {% block extra_scripts %}
 <script>
@@ -156,11 +78,6 @@
                 {
                     url: '{% url "holiday_events" %}',
                     display: 'background'
-                },
-                // Ownership periods (background events with pastel colors)
-                {
-                    url: '{% url "ownership_periods_api" %}',
-                    display: 'background'
                 }
             ],
             // Simpler toolbar on mobile (no Mese/Lista buttons)
@@ -181,6 +98,10 @@
 
             // Auto height to prevent scroll
             height: 'auto',
+
+            datesSet: function (info) {
+                renderOwnershipStrip(info.view);
+            },
 
             // Enable drag & drop only on desktop (touch doesn't work well)
             editable: !isMobile,
@@ -333,7 +254,95 @@
         }
 
         calendar.render();
+
+        // Load ownership periods for the strip
+        fetch('{% url "ownership_periods_api" %}')
+            .then(r => r.json())
+            .then(data => {
+                window.__ownershipPeriods = data || [];
+                renderOwnershipStrip(calendar.view);
+            })
+            .catch(() => {
+                const strip = document.getElementById('ownership-strip');
+                if (strip) strip.innerHTML = '';
+            });
     });
+
+    function renderOwnershipStrip(view) {
+        const strip = document.getElementById('ownership-strip');
+        if (!strip || !view) return;
+
+        const periods = window.__ownershipPeriods || [];
+        if (!periods.length) {
+            strip.innerHTML = '<div class="ownership-strip-empty">Nessun periodo di pertinenza nel periodo selezionato</div>';
+            return;
+        }
+
+        const viewStart = view.activeStart;
+        const viewEnd = view.activeEnd; // exclusive
+        const total = viewEnd - viewStart;
+        const formatShort = (d) => d.toLocaleDateString('it-IT', { day: '2-digit', month: '2-digit' });
+
+        const byFamily = {};
+        periods.forEach((p) => {
+            const start = new Date(p.start);
+            const end = new Date(p.end);
+            const overlapStart = start < viewStart ? viewStart : start;
+            const overlapEnd = end > viewEnd ? viewEnd : end;
+            if (overlapStart >= overlapEnd) return;
+
+            const left = ((overlapStart - viewStart) / total) * 100;
+            const width = ((overlapEnd - overlapStart) / total) * 100;
+            const family = p.extendedProps?.family_group || 'Altro';
+            if (!byFamily[family]) byFamily[family] = [];
+            byFamily[family].push({
+                left,
+                width,
+                title: p.title || family,
+                start: overlapStart,
+                end: new Date(overlapEnd.getTime() - 86400000),
+            });
+        });
+
+        const families = Object.keys(byFamily);
+        if (!families.length) {
+            strip.innerHTML = '<div class="ownership-strip-empty">Nessun periodo di pertinenza nel periodo selezionato</div>';
+            return;
+        }
+
+        strip.innerHTML = '';
+        families.forEach((family) => {
+            const row = document.createElement('div');
+            row.className = 'ownership-strip-row';
+
+            const label = document.createElement('div');
+            label.className = 'ownership-strip-label';
+            label.textContent = family;
+
+            const track = document.createElement('div');
+            track.className = 'ownership-strip-track';
+
+            const segments = byFamily[family].sort((a, b) => a.left - b.left);
+            segments.forEach(seg => {
+                const el = document.createElement('div');
+                const isMine = family === '{{ user.profile.family_group }}';
+                el.className = `ownership-segment ${isMine ? 'ownership-segment--primary' : 'ownership-segment--muted'}`;
+                el.style.setProperty('--left', `${seg.left}%`);
+                el.style.setProperty('--width', `${seg.width}%`);
+                const rangeLabel = `${formatShort(seg.start)}–${formatShort(seg.end)}`;
+                el.title = `${seg.title} · ${seg.start.toLocaleDateString('it-IT')} → ${seg.end.toLocaleDateString('it-IT')}`;
+                const text = document.createElement('span');
+                text.className = 'ownership-segment-label';
+                text.textContent = `${seg.title} · ${rangeLabel}`;
+                el.appendChild(text);
+                track.appendChild(el);
+            });
+
+            row.appendChild(label);
+            row.appendChild(track);
+            strip.appendChild(row);
+        });
+    }
 
     // Mobile booking form functions
     function openMobileBookingForm() {
