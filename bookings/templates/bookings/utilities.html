@@ -455,6 +455,29 @@ function renderThermostat() {
     const targetTemp = thermostatData.target_temperature || 20;
     const state = thermostatData.state || 'off';
     const hvacAction = thermostatData.hvac_action || 'idle';
+    const presetMode = thermostatData.preset_mode || '';
+    const presetActive = presetMode && !['none', 'home'].includes(presetMode);
+    const scheduleCurrentRaw = scheduleData && scheduleData.current ? scheduleData.current : '';
+    const scheduleCurrent = typeof scheduleCurrentRaw === 'string' ? scheduleCurrentRaw.trim() : '';
+    const scheduleValid = scheduleCurrent && !['unknown', 'unavailable'].includes(scheduleCurrent.toLowerCase());
+
+    const presetLabels = {
+        away: 'Assenza',
+        eco: 'Eco',
+        comfort: 'Comfort',
+        boost: 'Boost',
+        sleep: 'Notte',
+        activity: 'Attivita',
+        frost_guard: 'Antigelo'
+    };
+    const presetLabel = presetLabels[presetMode] || presetMode || '';
+    const scheduleLabels = {
+        frost_guard: 'Antigelo'
+    };
+    const scheduleLabel = scheduleLabels[scheduleCurrent] || scheduleCurrent || '';
+    const activeProgramLabel = presetActive
+        ? (presetLabel || 'N/D')
+        : (scheduleValid ? scheduleLabel : (presetLabel || 'N/D'));
     
     // Determine heating status icon and color
     let statusIcon, statusColor, statusText;
@@ -506,11 +529,11 @@ function renderThermostat() {
                         </div>
                         ${scheduleData && scheduleData.options && scheduleData.options.length > 0 ? `
                         <hr class="my-3">
-                        <h6 class="mb-3"><i class="fa-solid fa-calendar-alt"></i> Programma Attivo: <span class="badge bg-info">${scheduleData.current || thermostatData.preset_mode || 'N/D'}</span></h6>
+                        <h6 class="mb-3"><i class="fa-solid fa-calendar-alt"></i> Programma Attivo: <span class="badge bg-info">${activeProgramLabel}</span></h6>
                         <div class="d-flex flex-wrap gap-2 justify-content-center">
                             ${scheduleData.options.map(option => `
-                                <button class="btn btn-sm ${scheduleData.current === option ? 'btn-primary' : 'btn-outline-primary'}" onclick="setSchedule('${option}')">
-                                    <i class="fa-solid fa-calendar-day"></i> ${option}
+                                <button class="btn btn-sm ${(!presetActive && scheduleValid && scheduleCurrent === option) ? 'btn-primary' : 'btn-outline-primary'}" onclick="setSchedule('${option}')">
+                                    <i class="fa-solid fa-calendar-day"></i> ${scheduleLabels[option] || option}
                                 </button>
                             `).join('')}
                             <button class="btn btn-sm ${thermostatData.preset_mode === 'away' ? 'btn-warning' : 'btn-outline-warning'}" onclick="setPreset('away')">
