@@ -214,6 +214,9 @@ def reject_booking(request, booking_id):
 @require_POST
 def request_deroga_view(request, booking_id):
     booking = get_object_or_404(Booking, id=booking_id)
+    # Prevent owner from requesting deroga on their own booking
+    if booking.user == request.user:
+        return JsonResponse({'status': 'error', 'message': 'Non puoi richiedere una deroga sulla tua prenotazione'}, status=403)
     # Only if approved
     if booking.status != 'APPROVED':
         return JsonResponse({'status': 'error', 'message': 'Booking not approved'}, status=400)

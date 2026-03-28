@@ -10,7 +10,10 @@ from pathlib import Path
 BASE_DIR = Path(__file__).resolve().parent.parent
 
 # SECURITY: Load from environment
-SECRET_KEY = os.environ.get('SECRET_KEY', 'change-me-in-production')
+SECRET_KEY = os.environ.get('SECRET_KEY')
+if not SECRET_KEY:
+    from django.core.exceptions import ImproperlyConfigured
+    raise ImproperlyConfigured("The SECRET_KEY environment variable is not set")
 
 # SECURITY: Never run with debug in production
 DEBUG = os.environ.get('DEBUG', 'False').lower() == 'true'

@@ -22,7 +22,14 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # SECURITY WARNING: keep the secret key used in production secret!
 # Development only - DO NOT use in production!
 # Generate a real key with: python -c "import secrets; print(secrets.token_urlsafe(50))"
-SECRET_KEY = 'django-insecure-development-only-not-for-production'
+import os
+import logging
+
+logger = logging.getLogger(__name__)
+
+SECRET_KEY = os.environ.get('SECRET_KEY', 'django-insecure-development-only-not-for-production')
+if SECRET_KEY == 'django-insecure-development-only-not-for-production':
+    logger.warning('Using default SECRET_KEY for development. Do not use in production!')
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
