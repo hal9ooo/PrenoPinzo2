@@ -111,6 +111,10 @@
                         <button class="btn btn-outline-danger btn-sm" type="submit">Logout</button>
                     </form>
                     {% endif %}
+                    <!-- Dark mode toggle -->
+                    <button id="dark-mode-toggle" class="btn btn-sm btn-outline-secondary me-2" title="Passa alla modalità scura">
+                        <i class="fa-solid fa-moon"></i>
+                    </button>
                 </div>
             </div>
         </div>
@@ -245,6 +249,42 @@
         checkUnreadChat();
         setInterval(checkUnreadChat, 5000);
         {% endif %}
+    </script>
+    <script>
+      // Dark mode functionality
+      const darkModeToggle = document.getElementById('dark-mode-toggle');
+      const body = document.body;
+
+      // Check for saved dark mode preference
+      const darkMode = localStorage.getItem('darkMode') === 'enabled';
+
+      // Enable dark mode if saved
+      if (darkMode) {
+        body.classList.add('dark-mode');
+        updateToggleIcon();
+      }
+
+      // Toggle dark mode when button is clicked
+      darkModeToggle.addEventListener('click', function() {
+        body.classList.toggle('dark-mode');
+        // Save preference
+        if (body.classList.contains('dark-mode')) {
+          localStorage.setItem('darkMode', 'enabled');
+        } else {
+          localStorage.setItem('darkMode', null);
+        }
+        updateToggleIcon();
+      });
+
+      function updateToggleIcon() {
+        if (body.classList.contains('dark-mode')) {
+          darkModeToggle.innerHTML = '<i class="fa-solid fa-sun"></i>';
+          darkModeToggle.setAttribute('title', 'Passa alla modalità chiara');
+        } else {
+          darkModeToggle.innerHTML = '<i class="fa-solid fa-moon"></i>';
+          darkModeToggle.setAttribute('title', 'Passa alla modalità scura');
+        }
+      }
     </script>
     {% block extra_scripts %}{% endblock %}
 </body>

@@ -495,6 +495,22 @@ body {
   font-size: 1rem;
   outline: none;
 }
+/* Dark Mode Variables */
+.dark-mode {
+   --bg: #1a1a1a;
+   --bg-accent: #242424;
+   --surface: #2d2d2d;
+   --text: #e0e0e0;
+   --muted: #a0a0a0;
+   --border: #404040;
+   --primary: #4dabf7;
+   --primary-600: #3a8fd6;
+   --success: #6bcb77;
+   --warning: #f6c23e;
+   --danger: #f65e5e;
+   --shadow-sm: 0 6px 18px rgba(0, 0, 0, 0.3);
+   --shadow-md: 0 12px 28px rgba(0, 0, 0, 0.4);
+}
 
 .chat-input:focus {
   border-color: #2b6cff;
