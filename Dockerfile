@@ -25,7 +25,7 @@ FROM python:3.12.13-slim as production
 ENV PYTHONDONTWRITEBYTECODE=1 \
     PYTHONUNBUFFERED=1 \
     PATH="/opt/venv/bin:$PATH" \
-    DJANGO_SETTINGS_MODULE=PrenoPinzo.settings_prod
+    DJANGO_SETTINGS_MODULE=PrenoPinzo.settings
 
 WORKDIR /app
 
