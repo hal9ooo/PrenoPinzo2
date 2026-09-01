@@ -324,7 +324,16 @@
             document.getElementById('app-modal').close();
         });
     </script>
-{% block extra_scripts %}{% endblock %}
+    <script>
+        function showChatPopover(message) {
+            const popover = document.getElementById('chat-popover');
+            document.getElementById('popover-content').innerHTML = message;
+            popover.showPopover();
+        }
+    </script>
+    <div id="chat-popover" popover class="chat-popover">
+        <div id="popover-content"></div>
+    </div>
+    {% block extra_scripts %}{% endblock %}
 </body>
-
 </html>
