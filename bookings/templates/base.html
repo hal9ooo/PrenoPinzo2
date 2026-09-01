@@ -308,7 +308,23 @@
             });
         });
     </script>
-    {% block extra_scripts %}{% endblock %}
+    <dialog id="app-modal" class="modal-style">
+        <div class="modal-content">
+            <button id="close-modal" aria-label="Close">×</button>
+            <div id="modal-body"></div>
+        </div>
+    </dialog>
+    <script>
+        function openNativeModal(contentHtml) {
+            const modal = document.getElementById('app-modal');
+            document.getElementById('modal-body').innerHTML = contentHtml;
+            modal.showModal();
+        }
+        document.getElementById('close-modal').addEventListener('click', () => {
+            document.getElementById('app-modal').close();
+        });
+    </script>
+{% block extra_scripts %}{% endblock %}
 </body>
 
 </html>
