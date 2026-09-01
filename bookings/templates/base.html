@@ -286,7 +286,54 @@
         }
       }
     </script>
+    <script>
+        document.body.addEventListener('htmx:beforeSwap', (event) => {
+            if (!document.startViewTransition) return; // Fallback if not supported
+
+            const oldContent = document.body;
+            event.preventDefault(); // Stop the actual swap to control it
+
+            document.startViewTransition(() => {
+                // Execute the original HTMX swap manually or via event
+                if (event.detail.xhrRequest) {
+                    event.detail.xhrRequest.send();
+                } else {
+                    fetch(event.detail.target.getAttribute('hx-post') || event.detail.target.getAttribute('hx-get'), {
+                        method: (event.detail.currentModifiers?.method || 'GET'),
+                        headers: {'X-CSRFToken': getCookie('csrftoken')}
+                    }).then(response => response.text()).then(html => {
+                        event.detail.target.innerHTML = html;
+                    });
+                }
+            });
+        });
+    </script>
+    <dialog id="app-modal" class="modal-style">
+        <div class="modal-content">
+            <button id="close-modal" aria-label="Close">×</button>
+            <div id="modal-body"></div>
+        </div>
+    </dialog>
+    <script>
+        function openNativeModal(contentHtml) {
+            const modal = document.getElementById('app-modal');
+            document.getElementById('modal-body').innerHTML = contentHtml;
+            modal.showModal();
+        }
+        document.getElementById('close-modal').addEventListener('click', () => {
+            document.getElementById('app-modal').close();
+        });
+    </script>
+    <script>
+        function showChatPopover(message) {
+            const popover = document.getElementById('chat-popover');
+            document.getElementById('popover-content').innerHTML = message;
+            popover.showPopover();
+        }
+    </script>
+    <div id="chat-popover" popover class="chat-popover">
+        <div id="popover-content"></div>
+    </div>
     {% block extra_scripts %}{% endblock %}
 </body>
-
 </html>

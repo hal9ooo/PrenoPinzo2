@@ -15,6 +15,22 @@
   --radius: 14px;
 }
 
+/* Container Queries Setup */
+.dashboard-card {
+    container-type: inline-size;
+    container-name: card;
+}
+
+/* Container Queries Layout */
+@container card (max-width: 300px) {
+    .card-layout {
+        flex-direction: column;
+    }
+    .card-image {
+        display: none;
+    }
+}
+
 body {
   font-family: "Manrope", "Outfit", sans-serif;
   background: radial-gradient(1200px 600px at 10% -10%, #ffffff 0%, var(--bg) 45%, var(--bg-accent) 100%);
