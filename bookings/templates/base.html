@@ -286,6 +286,28 @@
         }
       }
     </script>
+    <script>
+        document.body.addEventListener('htmx:beforeSwap', (event) => {
+            if (!document.startViewTransition) return; // Fallback if not supported
+
+            const oldContent = document.body;
+            event.preventDefault(); // Stop the actual swap to control it
+
+            document.startViewTransition(() => {
+                // Execute the original HTMX swap manually or via event
+                if (event.detail.xhrRequest) {
+                    event.detail.xhrRequest.send();
+                } else {
+                    fetch(event.detail.target.getAttribute('hx-post') || event.detail.target.getAttribute('hx-get'), {
+                        method: (event.detail.currentModifiers?.method || 'GET'),
+                        headers: {'X-CSRFToken': getCookie('csrftoken')}
+                    }).then(response => response.text()).then(html => {
+                        event.detail.target.innerHTML = html;
+                    });
+                }
+            });
+        });
+    </script>
     {% block extra_scripts %}{% endblock %}
 </body>
 
