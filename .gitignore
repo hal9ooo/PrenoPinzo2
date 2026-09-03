@@ -49,3 +49,5 @@ smtp/sasl_passwd.db
 # OS
 .DS_Store
 Thumbs.db
+.agents/*
+.claude/*
