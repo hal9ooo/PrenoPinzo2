@@ -51,3 +51,6 @@ smtp/sasl_passwd.db
 Thumbs.db
 .agents/*
 .claude/*
+
+# Local code-graph index (never commit)
+.tokensave/
