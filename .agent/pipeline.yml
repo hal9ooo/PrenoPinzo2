@@ -22,10 +22,10 @@ models:
     thinking: high
 checks:
   setup:
-  - 'true'
+  - "uv venv --python 3.12 --clear .venv"
+  - "uv pip install --python .venv/bin/python -r requirements.txt"
   test:
-  - 'python -c "raise SystemExit(''No isolated automated test suite: onboarding blocked;
-    see CI-safe backlog'')"'
+  - "SECRET_KEY=ci-secret .venv/bin/python manage.py test tests --noinput"
 runtimes:
   python: '3.12'
   node: '20'
