@@ -10,5 +10,15 @@ precedente valgono `git log` e le note delle release.
 
 <!-- sprint-flow:inizio a526d571c2b0147fc07fd5622c519d0833fafe60 -->
 <!-- sprint-flow:giorni -->
-<!-- sprint-flow:ultimo a526d571c2b0147fc07fd5622c519d0833fafe60 -->
+<!-- sprint-flow:ultimo 51ea722251fc715ee29a0299234eb2506e6e9822 -->
+
+## 2026-11-16
+<!-- sprint-flow:giorno commit=1 testo=prod-default -->
+
+**Archiviati piani di modernizzazione obsoleti** — opencode
+- Il piano e il design della modernizzazione native-first sono stati spostati in docs/superpowers/archive.
+- Erano attività del 2026-09-01 mai eseguite e citavano percorsi non più validi.
+- Il frontend usa ancora Bootstrap, quindi i documenti non riflettevano lo stato attuale.
+- Un README nell'archivio spiega lo stato di questi documenti.
+
 <!-- sprint-flow:giorni-fine -->
